@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Burster", "Burster\Burster.vcxproj", "{C3CD5CA6-2965-4F5B-8106-FC84A91C30AE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C3CD5CA6-2965-4F5B-8106-FC84A91C30AE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C3CD5CA6-2965-4F5B-8106-FC84A91C30AE}.Debug|Win32.Build.0 = Debug|Win32
+		{C3CD5CA6-2965-4F5B-8106-FC84A91C30AE}.Release|Win32.ActiveCfg = Release|Win32
+		{C3CD5CA6-2965-4F5B-8106-FC84A91C30AE}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

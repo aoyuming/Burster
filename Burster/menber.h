@@ -1,4 +1,5 @@
 #pragma once
+#include "stdafx.h"
 #include <vector>
 
 using namespace std;
@@ -15,6 +16,23 @@ struct stMember
 		return this->money < that.money;
 	}
 };
+
+//拷贝成员信息
+void MemberCopy(vector<stMember>& vect1, const vector<stMember*>& vect2);
+void MemberCopy(vector<stMember*>& vect1, const vector<stMember>& vect2);
+
+//判断stMember是否在vect里面
+stMember* IsMemberInVect(stMember m, vector<stMember*>& ls);
+
+//判断stMember是否在vect里面
+int IsMemberInVect_index(stMember m, vector<stMember*>& ls);
+
+//最佳支付方案
+void PayScheme_g(vector<CString>* paySchemeString,
+				vector<stMember*>* allMenberVect,
+				int sum,
+				CListBox* historyListBox);
+
 
 //信息
 struct stData

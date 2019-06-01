@@ -4,6 +4,7 @@
 #include "afxdialogex.h"
 #include "Command.h"
 #include "menber.h"
+#include "Config.h"
 
 //添加命令
 class AddCommand : public Command
@@ -54,29 +55,6 @@ public:
 			delete m_NewMember;
 	}
 
-	//判断stMember是否在vect里面
-	stMember* IsMemberInVect(stMember m, vector<stMember*>& ls)
-	{
-		for (vector<stMember*>::iterator it = ls.begin(); it != ls.end(); ++it)
-		{
-			if (m.name == (*it)->name)
-				return *it;
-		}
-
-		return NULL;
-	}
-
-	//判断stMember是否在vect里面
-	int IsMemberInVect_index(stMember m, vector<stMember*>& ls)
-	{
-		for (int i = 0; i < ls.size(); ++i)
-		{
-			if (m.name == ls[i]->name)
-				return i;
-		}
-
-		return -1;
-	}
 
 	//执行命令
 	virtual void execute()
@@ -458,120 +436,6 @@ public:
 
 	}
 
-	//最佳支付方案
-	void PayScheme()
-	{
-		m_PaySchemeString->clear();
-		char buf[32];
-
-		//把赢钱的和输钱的分开
-		vector<stMember> lose, vectory;
-		for (int i = 0; i < m_AllMenberVect->size(); ++i)
-		{
-			if ((*m_AllMenberVect)[i]->money < 0)
-				lose.push_back(*(*m_AllMenberVect)[i]);
-			else if ((*m_AllMenberVect)[i]->money > 0)
-				vectory.push_back(*(*m_AllMenberVect)[i]);
-		}
-
-		vector<stMember>::iterator loseIt = lose.begin();
-		while (loseIt != lose.end())
-		{
-			bool flag = true;
-			for (vector<stMember>::iterator it = vectory.begin(); it != vectory.end();)
-			{
-				if (-((*loseIt).money) == (*it).money)
-				{
-					_itoa_s((*it).money * m_Sum, buf, 10);
-					CString s = (*loseIt).name + _TEXT("  给  ") + (*it).name + _TEXT("  ") + buf;
-					m_PaySchemeString->push_back(s);
-
-					loseIt = lose.erase(loseIt);
-					it = vectory.erase(it);
-					flag = false;
-					break;
-				}
-				else
-					++it;
-
-			}
-
-			if (flag)
-				loseIt++;
-		}
-
-		loseIt = lose.begin();
-		while (loseIt != lose.end())
-		{
-			bool flag = true;
-			for (vector<stMember>::iterator it = vectory.begin(); it != vectory.end();)
-			{
-				if (-((*loseIt).money) == (*it).money)
-				{
-					_itoa_s((*it).money * m_Sum, buf, 10);
-					CString s = (*loseIt).name + _TEXT("  给  ") + (*it).name + _TEXT("  ") + buf;
-					m_PaySchemeString->push_back(s);
-
-					loseIt = lose.erase(loseIt);
-					it = vectory.erase(it);
-					flag = false;
-					break;
-				}
-				else if (-((*loseIt).money) < (*it).money)
-				{
-					_itoa_s(-(*loseIt).money * m_Sum, buf, 10);
-					CString s = (*loseIt).name + _TEXT("  给  ") + (*it).name + _TEXT("  ") + buf;
-					m_PaySchemeString->push_back(s);
-
-					(*it).money += (*loseIt).money;
-					loseIt = lose.erase(loseIt);
-					flag = false;
-
-					if ((*it).money <= 0)
-						it = vectory.erase(it);
-					break;
-				}
-				else
-				{
-					_itoa_s((*it).money * m_Sum, buf, 10);
-					CString s = (*loseIt).name + _TEXT("  给  ") + (*it).name + _TEXT("  ") + buf;
-					m_PaySchemeString->push_back(s);
-
-					((*loseIt).money) += (*it).money;
-					it = vectory.erase(it);
-
-					if (((*loseIt).money) >= 0)
-					{
-						loseIt = lose.erase(loseIt);
-						flag = false;
-						break;
-					}
-				}
-			}
-
-			if (flag)
-				loseIt++;
-		}
-
-		for (auto it = lose.begin(); it != lose.end(); ++it)
-		{
-			_itoa_s(abs((*it).money * m_Sum), buf, 10);
-			CString s = (*it).name + _TEXT("  给  ") + _T("[???]") + _TEXT("  ") + buf;
-			m_PaySchemeString->push_back(s);
-		}
-
-		for (auto it = vectory.begin(); it != vectory.end(); ++it)
-		{
-			_itoa_s(abs((*it).money * m_Sum), buf, 10);
-			CString s = _T("[???]  给  ") + (*it).name + +_TEXT("  ") + buf;
-			m_PaySchemeString->push_back(s);
-		}
-
-		m_HistoryListBox->ResetContent();
-
-		for (int i = 0; i < m_PaySchemeString->size(); ++i)
-			m_HistoryListBox->InsertString(0, (*m_PaySchemeString)[i]);
-	}
 
 	//执行命令
 	virtual void execute()
@@ -595,7 +459,8 @@ public:
 			m_AllListBox->InsertString(0, (*m_AllMenberVect)[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 
-		PayScheme();
+		//最佳支付方案
+		PayScheme_g(m_PaySchemeString, m_AllMenberVect, m_Sum, m_HistoryListBox);
 		
 		if (m_Data->size() > 0)
 		{
@@ -655,7 +520,7 @@ public:
 		m_AllListBox->ResetContent();
 
 		//最佳支付方案
-		PayScheme();
+		PayScheme_g(m_PaySchemeString, m_AllMenberVect, m_Sum, m_HistoryListBox);
 
 		for (auto it = m_RedMenberVect->begin(); it != m_RedMenberVect->end(); ++it)
 			m_RedListBox->AddString((*it)->name);
@@ -693,7 +558,7 @@ public:
 		m_AllListBox->ResetContent();
 
 		//最佳支付方案
-		PayScheme();
+		PayScheme_g(m_PaySchemeString, m_AllMenberVect, m_Sum, m_HistoryListBox);
 
 		for (auto it = m_RedMenberVect->begin(); it != m_RedMenberVect->end(); ++it)
 			m_RedListBox->AddString((*it)->name);
@@ -712,7 +577,7 @@ public:
 	}
 };
 
-//胜利命令
+//改变底注命令
 class ChangedMoneyCommand : public Command
 {
 private:
@@ -765,121 +630,6 @@ public:
 
 	}
 
-	//最佳支付方案
-	void PayScheme()
-	{
-		m_PaySchemeString->clear();
-		char buf[32];
-
-		//把赢钱的和输钱的分开
-		vector<stMember> lose, vectory;
-		for (int i = 0; i < m_AllMenberVect->size(); ++i)
-		{
-			if ((*m_AllMenberVect)[i]->money < 0)
-				lose.push_back(*(*m_AllMenberVect)[i]);
-			else if ((*m_AllMenberVect)[i]->money > 0)
-				vectory.push_back(*(*m_AllMenberVect)[i]);
-		}
-
-		vector<stMember>::iterator loseIt = lose.begin();
-		while (loseIt != lose.end())
-		{
-			bool flag = true;
-			for (vector<stMember>::iterator it = vectory.begin(); it != vectory.end();)
-			{
-				if (-((*loseIt).money) == (*it).money)
-				{
-					_itoa_s((*it).money * (*m_Sum), buf, 10);
-					CString s = (*loseIt).name + _TEXT("  给  ") + (*it).name + _TEXT("  ") + buf;
-					m_PaySchemeString->push_back(s);
-
-					loseIt = lose.erase(loseIt);
-					it = vectory.erase(it);
-					flag = false;
-					break;
-				}
-				else
-					++it;
-
-			}
-
-			if (flag)
-				loseIt++;
-		}
-
-		loseIt = lose.begin();
-		while (loseIt != lose.end())
-		{
-			bool flag = true;
-			for (vector<stMember>::iterator it = vectory.begin(); it != vectory.end();)
-			{
-				if (-((*loseIt).money) == (*it).money)
-				{
-					_itoa_s((*it).money * (*m_Sum), buf, 10);
-					CString s = (*loseIt).name + _TEXT("  给  ") + (*it).name + _TEXT("  ") + buf;
-					m_PaySchemeString->push_back(s);
-
-					loseIt = lose.erase(loseIt);
-					it = vectory.erase(it);
-					flag = false;
-					break;
-				}
-				else if (-((*loseIt).money) < (*it).money)
-				{
-					_itoa_s(-(*loseIt).money * (*m_Sum), buf, 10);
-					CString s = (*loseIt).name + _TEXT("  给  ") + (*it).name + _TEXT("  ") + buf;
-					m_PaySchemeString->push_back(s);
-
-					(*it).money += (*loseIt).money;
-					loseIt = lose.erase(loseIt);
-					flag = false;
-
-					if ((*it).money <= 0)
-						it = vectory.erase(it);
-					break;
-				}
-				else
-				{
-					_itoa_s((*it).money * (*m_Sum), buf, 10);
-					CString s = (*loseIt).name + _TEXT("  给  ") + (*it).name + _TEXT("  ") + buf;
-					m_PaySchemeString->push_back(s);
-
-					((*loseIt).money) += (*it).money;
-					it = vectory.erase(it);
-
-					if (((*loseIt).money) >= 0)
-					{
-						loseIt = lose.erase(loseIt);
-						flag = false;
-						break;
-					}
-				}
-			}
-
-			if (flag)
-				loseIt++;
-		}
-
-		for (auto it = lose.begin(); it != lose.end(); ++it)
-		{
-			_itoa_s(abs((*it).money * (*m_Sum)), buf, 10);
-			CString s = (*it).name + _TEXT("  给  ") + _T("[???]") + _TEXT("  ") + buf;
-			m_PaySchemeString->push_back(s);
-		}
-
-		for (auto it = vectory.begin(); it != vectory.end(); ++it)
-		{
-			_itoa_s(abs((*it).money * (*m_Sum)), buf, 10);
-			CString s = _T("[???]  给  ") + (*it).name + +_TEXT("  ") + buf;
-			m_PaySchemeString->push_back(s);
-		}
-
-		m_HistoryListBox->ResetContent();
-
-		for (int i = 0; i < m_PaySchemeString->size(); ++i)
-			m_HistoryListBox->InsertString(0, (*m_PaySchemeString)[i]);
-	}
-
 	//执行命令
 	virtual void execute()
 	{
@@ -898,7 +648,8 @@ public:
 			m_AllListBox->InsertString(0, (*m_AllMenberVect)[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 
-		PayScheme();
+		//最佳支付方案
+		PayScheme_g(m_PaySchemeString, m_AllMenberVect, *m_Sum, m_HistoryListBox);
 
 		//保存信息 用于重做
 		m_AllMenberVect_Redo_Temp.clear();
@@ -927,7 +678,7 @@ public:
 		m_AllListBox->ResetContent();
 
 		//最佳支付方案
-		PayScheme();
+		PayScheme_g(m_PaySchemeString, m_AllMenberVect, *m_Sum, m_HistoryListBox);
 
 		for (int i = 0; i < (int)m_AllMenberVect->size(); ++i)
 		{
@@ -958,7 +709,7 @@ public:
 		m_AllListBox->ResetContent();
 
 		//最佳支付方案
-		PayScheme();
+		PayScheme_g(m_PaySchemeString, m_AllMenberVect, *m_Sum, m_HistoryListBox);
 
 		for (int i = 0; i < (int)m_AllMenberVect->size(); ++i)
 		{
@@ -968,5 +719,211 @@ public:
 			_itoa_s((*m_AllMenberVect)[i]->money * (*m_Sum), buf, 10);
 			m_AllListBox->InsertString(0, (*m_AllMenberVect)[i]->name + _TEXT("  ") + s + CString(buf));
 		}
+	}
+};
+
+///配置命令
+class ConfigCommand : public Command
+{
+private:
+
+	//外部数据指针
+	CListBox* m_CurListBox;
+	CListBox* m_AllListBox;
+	CListBox* m_BuleListBox;
+	CListBox* m_RedListBox;
+	CListBox* m_HistoryListBox;
+
+	int m_Sum;
+
+	vector<stMember*>* m_DoveMenberVect;
+	vector<stMember*>* m_CurMenberVect;
+	vector<stMember*>* m_AllMenberVect;
+	vector<stMember*>* m_BuleMenberVect;
+	vector<stMember*>* m_RedMenberVect;
+	vector<stData>* m_Data;
+
+	//执行前的数据
+	vector<stData> m_Data_Undo_Temp;
+	vector<stMember> m_AllMenberVect_Undo_Temp;
+	vector<stMember> m_CurMenberVect_Undo_Temp;
+	vector<stMember> m_RedMenberVect_Undo_Temp;
+	vector<stMember> m_BuleMenberVect_Undo_Temp;
+
+	//执行后的数据
+	vector<stData> m_Data_Redo_Temp;
+	vector<stMember> m_AllMenberVect_Redo_Temp;
+	vector<stMember> m_CurMenberVect_Redo_Temp;
+	vector<stMember> m_BuleMenberVect_Redo_Temp;
+	vector<stMember> m_RedMenberVect_Redo_Temp;
+
+public:
+
+	ConfigCommand(CListBox* CurListBox,
+				CListBox* AllListBox,
+				CListBox* BuleListBox,
+				CListBox* RedListBox,
+				CListBox* historyListBox,
+				vector<stMember*>* CurMenberVect,
+				vector<stMember*>* AllMenberVect,
+				vector<stMember*>* BuleMenberVect,
+				vector<stMember*>* RedMenberVect,
+				vector<stMember*>* DoveMenberVect,
+				vector<stData>* Data,
+				int sum)
+		:
+		m_CurListBox(CurListBox),
+		m_AllListBox(AllListBox),
+		m_BuleListBox(BuleListBox),
+		m_HistoryListBox(historyListBox),
+		m_RedListBox(RedListBox),
+		m_DoveMenberVect(DoveMenberVect),
+		m_CurMenberVect(CurMenberVect),
+		m_AllMenberVect(AllMenberVect),
+		m_BuleMenberVect(BuleMenberVect),
+		m_RedMenberVect(RedMenberVect),
+		m_Sum(sum)
+	{
+		MemberCopy(m_AllMenberVect_Undo_Temp, *AllMenberVect);
+		MemberCopy(m_CurMenberVect_Undo_Temp, *CurMenberVect);
+		MemberCopy(m_BuleMenberVect_Undo_Temp, *BuleMenberVect);
+		MemberCopy(m_RedMenberVect_Undo_Temp, *RedMenberVect);
+	}
+
+	virtual	~ConfigCommand()
+	{
+	}
+
+	//执行命令
+	virtual void execute()
+	{
+		// TODO: 在此添加控件通知处理程序代码
+		bool save = false;
+		CConfig dlg(m_AllListBox,
+					m_CurMenberVect,
+					m_AllMenberVect,
+					m_RedMenberVect,
+					m_BuleMenberVect,
+					m_Sum,
+					save);
+
+		dlg.DoModal();
+
+		//修改
+		if (save)
+		{
+			//重新刷新列表框数据
+			SetListBoxData();
+
+			//重新计算最佳支付方案
+			vector<CString> pay;
+			PayScheme_g(&pay, m_AllMenberVect, m_Sum, m_HistoryListBox);
+		}
+
+		//记录执行命令之后的数据，用于重做
+		MemberCopy(m_AllMenberVect_Redo_Temp, *m_AllMenberVect);
+		MemberCopy(m_CurMenberVect_Redo_Temp, *m_CurMenberVect);
+		MemberCopy(m_BuleMenberVect_Redo_Temp, *m_BuleMenberVect);
+		MemberCopy(m_RedMenberVect_Redo_Temp, *m_RedMenberVect);
+	}
+
+	//设置各个列表框数据
+	void SetListBoxData()
+	{
+		CListBox* list[] =
+		{
+			m_CurListBox,
+			m_RedListBox,
+			m_BuleListBox,
+			m_AllListBox
+		};
+
+		vector<stMember*>* vect[] =
+		{
+			m_CurMenberVect,
+			m_RedMenberVect,
+			m_BuleMenberVect,
+			m_AllMenberVect
+		};
+
+		for (int i = 0; i < 4; ++i)
+		{
+			list[i]->ResetContent();
+			for (auto it = vect[i]->begin(); it != vect[i]->end(); ++it)
+			{
+				CString str = (*it)->name;
+				CString money;
+				money.Format("%d", (*it)->money * m_Sum);
+				if ((*it)->money >= 0)
+					money = _T("+") + money;
+				if (i == 3)
+					str = str + _T("  ") + money;
+				list[i]->AddString(str);
+			}
+		}
+	}
+
+	//重做
+	virtual void redo()
+	{
+		//还原执行命令前的数据
+		MemberCopy(*m_AllMenberVect, m_AllMenberVect_Redo_Temp);
+
+		//还原红队列表
+		m_RedMenberVect->clear();
+		for (int i = 0; i < m_RedMenberVect_Redo_Temp.size(); ++i)
+		{
+			int index = IsMemberInVect_index(m_RedMenberVect_Redo_Temp[i], *m_AllMenberVect);
+			if (index != -1)
+				m_RedMenberVect->push_back((*m_AllMenberVect)[index]);
+		}
+
+		//还原蓝队队列表
+		m_BuleMenberVect->clear();
+		for (int i = 0; i < m_BuleMenberVect_Redo_Temp.size(); ++i)
+		{
+			int index = IsMemberInVect_index(m_BuleMenberVect_Redo_Temp[i], *m_AllMenberVect);
+			if (index != -1)
+				m_BuleMenberVect->push_back((*m_AllMenberVect)[index]);
+		}
+
+		//重新刷新列表框数据
+		SetListBoxData();
+
+		//重新计算最佳支付方案
+		vector<CString> pay;
+		PayScheme_g(&pay, m_AllMenberVect, m_Sum, m_HistoryListBox);
+	}
+
+	//撤销
+	virtual void undo()
+	{
+		//还原执行命令前的数据
+		MemberCopy(*m_AllMenberVect, m_AllMenberVect_Undo_Temp);
+
+		//还原红队列表
+		m_RedMenberVect->clear();
+		for (int i = 0; i < m_RedMenberVect_Undo_Temp.size(); ++i)
+		{
+			int index = IsMemberInVect_index(m_RedMenberVect_Undo_Temp[i], *m_AllMenberVect);
+			if (index != -1)
+				m_RedMenberVect->push_back((*m_AllMenberVect)[index]);
+		}
+
+		//还原蓝队队列表
+		m_BuleMenberVect->clear();
+		for (int i = 0; i < m_BuleMenberVect_Undo_Temp.size(); ++i)
+		{
+			int index = IsMemberInVect_index(m_BuleMenberVect_Undo_Temp[i], *m_AllMenberVect);
+			if (index != -1)
+				m_BuleMenberVect->push_back((*m_AllMenberVect)[index]);
+		}
+
+		//重新刷新列表框数据
+		SetListBoxData();
+
+		//重新计算最佳支付方案
+		vector<CString> pay;
+		PayScheme_g(&pay, m_AllMenberVect, m_Sum, m_HistoryListBox);
 	}
 };

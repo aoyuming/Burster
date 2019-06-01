@@ -53,12 +53,6 @@ public:
 	//对战信息
 	vector<stData> m_Data;
 
-	//最佳支付方案
-	void PayScheme();
-
-	//最佳支付方案（递归）
-	void _PayScheme(vector<stMember>& lose, vector<stMember>& win, vector<CString>& payScheme);
-
 	//保存
 	void Save(const char* fn,const char* rb);
 
@@ -71,8 +65,6 @@ public:
 	//判断stMember是否在vect里面
 	stMember* IsMemberInVect(stMember m,vector<stMember*>& ls);
 	int IsMemberInVect_index(stMember m, vector<stMember*>& ls);
-
-
 
 // 实现
 protected:

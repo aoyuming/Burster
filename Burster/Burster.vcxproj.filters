@@ -80,6 +80,9 @@
     <ClCompile Include="EditMenber.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="menber.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="f.rc">

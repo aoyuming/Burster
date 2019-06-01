@@ -118,7 +118,9 @@ BOOL CBursterDlg::OnInitDialog()
 
 	for (int i = 0; i < m_CurMenberVect.size(); ++i)
 		listbox1->AddString(m_CurMenberVect[i]->name);
-	PayScheme();
+	
+	//最佳支付方案
+	PayScheme_g(&m_PaySchemeString, &m_AllMenberVect, m_Sum, (CListBox*)GetDlgItem(IDC_LIST6));
 
 	//列表框
 	CListBox* list[] =
@@ -678,130 +680,6 @@ void CBursterDlg::OnBnClickedButton6_Change()
 	CommandManager::getInstance()->StoreCommand(com);
 }
 
-//最佳支付方案（递归）
-void CBursterDlg::_PayScheme(vector<stMember>& lose, vector<stMember>& win, vector<CString>& payScheme)
-{
-	
-}
-
-//最佳支付方案
-void CBursterDlg::PayScheme()
-{
-	m_PaySchemeString.clear();
-	char buf[32];
-
-	//把赢钱的和输钱的分开
-	vector<stMember> lose,vectory;
-	for (int i = 0; i < m_AllMenberVect.size(); ++i)
-	{
-		if (m_AllMenberVect[i]->money < 0)
-			lose.push_back(*m_AllMenberVect[i]);
-		else if (m_AllMenberVect[i]->money > 0)
-			vectory.push_back(*m_AllMenberVect[i]);
-	}
-
-	////递归添加
-	//_PayScheme(lose, vectory, m_PaySchemeString);
-
-	vector<stMember>::iterator loseIt = lose.begin();
-	while (loseIt != lose.end())
-	{
-		bool flag = true;
-		for (vector<stMember>::iterator it = vectory.begin(); it != vectory.end();)
-		{
-			if (-((*loseIt).money) == (*it).money)
-			{
-				_itoa_s((*it).money * m_Sum,buf,10);
-				CString s = (*loseIt).name + _TEXT("  给  ") + (*it).name + _TEXT("  ") + buf;
-				m_PaySchemeString.push_back(s);
-
-				loseIt = lose.erase(loseIt);
-				it = vectory.erase(it);
-				flag = false;
-				break;
-			}
-			else
-				++it;
-		
-		}
-
-		if (flag)
-			loseIt++;
-	}
-
-	loseIt = lose.begin();
-	while (loseIt != lose.end())
-	{
-		bool flag = true;
-		for (vector<stMember>::iterator it = vectory.begin(); it != vectory.end();)
-		{
-			if (-((*loseIt).money) == (*it).money)
-			{
-				_itoa_s((*it).money * m_Sum,buf,10);
-				CString s = (*loseIt).name + _TEXT("  给  ") + (*it).name + _TEXT("  ") + buf;
-				m_PaySchemeString.push_back(s);
-
-				loseIt = lose.erase(loseIt);
-				it = vectory.erase(it);
-				flag = false;
-				break;
-			}
-			else if (-((*loseIt).money) < (*it).money)
-			{
-				_itoa_s(-(*loseIt).money * m_Sum,buf,10);
-				CString s = (*loseIt).name + _TEXT("  给  ") + (*it).name +  _TEXT("  ") + buf;
-				m_PaySchemeString.push_back(s);
-
-				(*it).money += (*loseIt).money;
-				loseIt = lose.erase(loseIt);
-				flag = false;
-
-				if ((*it).money <= 0)
-					it = vectory.erase(it);
-				break;
-			}
-			else
-			{
-				_itoa_s((*it).money * m_Sum,buf,10);
-				CString s = (*loseIt).name + _TEXT("  给  ") + (*it).name +  _TEXT("  ") + buf;
-				m_PaySchemeString.push_back(s);
-
-				((*loseIt).money) += (*it).money;
-				it = vectory.erase(it);
-		
-				if (((*loseIt).money) >= 0)
-				{
-					loseIt = lose.erase(loseIt);
-					flag = false;
-					break;
-				}
-			}
-		}
-
-		if (flag)
-			loseIt++;
-	}
-
-	for (auto it = lose.begin(); it != lose.end(); ++it)
-	{
-		_itoa_s(abs((*it).money * m_Sum), buf, 10);
-		CString s = (*it).name + _TEXT("  给  ") + _T("[???]") + _TEXT("  ") + buf;
-		m_PaySchemeString.push_back(s);
-	}
-
-	for (auto it = vectory.begin(); it != vectory.end(); ++it)
-	{
-		_itoa_s(abs((*it).money * m_Sum), buf, 10);
-		CString s = _T("[???]  给  ") + (*it).name +  + _TEXT("  ") + buf;
-		m_PaySchemeString.push_back(s);
-	}
-
-	CListBox* listbox1 = (CListBox*)GetDlgItem(IDC_LIST6);
-	listbox1->ResetContent();
-
-	for (int i = 0; i < m_PaySchemeString.size(); ++i)
-		listbox1->InsertString(0, m_PaySchemeString[i]);
-}
 
 //退出
 void CBursterDlg::OnClose()
@@ -921,62 +799,21 @@ void CBursterDlg::OnBnClickedButton11()
 		return;
 	}
 
-	// TODO: 在此添加控件通知处理程序代码
-	bool save = false;
-	CConfig dlg((CListBox*)GetDlgItem(IDC_LIST5),
-				&m_CurMenberVect,
-				&m_AllMenberVect,
-				&m_RedMenberVect,
-				&m_BuleMenberVect,
-				m_Sum,
-				save);
+	//创建配置命令
+	ConfigCommand* com = new ConfigCommand((CListBox*)GetDlgItem(IDC_LIST2),
+										(CListBox*)GetDlgItem(IDC_LIST5),
+										(CListBox*)GetDlgItem(IDC_LIST4),
+										(CListBox*)GetDlgItem(IDC_LIST3),
+										(CListBox*)GetDlgItem(IDC_LIST6),
+										&m_CurMenberVect,
+										&m_AllMenberVect,
+										&m_BuleMenberVect,
+										&m_RedMenberVect,
+										&m_DoveMenberVect,
+										&m_Data,
+										m_Sum);
+	//执行命令
+	com->execute();
+	CommandManager::getInstance()->StoreCommand(com);
 
-	dlg.DoModal();
-
-	//修改
-	if (save)
-	{
-		CListBox* list[] = 
-		{ 
-			(CListBox*)GetDlgItem(IDC_LIST2),
-			(CListBox*)GetDlgItem(IDC_LIST4), 
-			(CListBox*)GetDlgItem(IDC_LIST3), 
-			(CListBox*)GetDlgItem(IDC_LIST5) 
-		};
-
-		vector<stMember*>* vect[] = 
-		{ 
-			&m_CurMenberVect,
-			&m_RedMenberVect, 
-			&m_BuleMenberVect, 
-			&m_AllMenberVect 
-		};
-
-		for (int i = 0; i < 4; ++i)
-		{
-			list[i]->ResetContent();
-			for (auto it = vect[i]->begin(); it != vect[i]->end(); ++it)
-			{
-				CString str = (*it)->name;
-				CString money;
-				money.Format("%d", (*it)->money * m_Sum);
-				if ((*it)->money >= 0)
-					money = _T("+") + money;
-				if (i == 3)
-					str = str + _T("  ") + money;
-				list[i]->AddString(str);
-			}
-		}
-
-		m_CurMenberVect = m_AllMenberVect;
-		for (int i = 0; i < m_DoveMenberVect.size(); ++i)
-		{
-			int index = IsMemberInVect_index(*m_DoveMenberVect[i], m_CurMenberVect);
-			if (index != -1)
-				m_CurMenberVect.erase(m_CurMenberVect.begin() + index);
-		}
-
-		//重新计算最佳支付方案
-		PayScheme();
-	}
 }

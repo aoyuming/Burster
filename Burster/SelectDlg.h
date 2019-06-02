@@ -1,5 +1,5 @@
 #pragma once
-#include "menber.h"
+#include "member.h"
 
 
 // CEraseDlg ¶Ô»°¿ò

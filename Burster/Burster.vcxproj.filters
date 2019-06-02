@@ -42,16 +42,16 @@
     <ClInclude Include="addName.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="menber.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Config.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="SelectDlg.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="EditMenber.h">
+    <ClInclude Include="member.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="EditMember.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -80,7 +80,7 @@
     <ClCompile Include="EditMenber.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="menber.cpp">
+    <ClCompile Include="member.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -7,7 +7,7 @@
 #include "afxdialogex.h"
 #include "addName.h"
 #include "SelectDlg.h"
-#include "EditMenber.h"
+#include "EditMember.h"
 
 
 // CConfig 对话框
@@ -18,7 +18,7 @@ CConfig::CConfig(CListBox* all_ext,
 				vector<stMember*>* cur,
 				vector<stMember*>* all,
 				vector<stMember*>* red,
-				vector<stMember*>* bule, 
+				vector<stMember*>* blue, 
 				int sum,
 				bool& saveFlag,
 				CWnd* pParent /*=NULL*/)
@@ -27,7 +27,7 @@ CConfig::CConfig(CListBox* all_ext,
 	m_CurMemberExterior(cur),
 	m_AllMemberExterior(all),
 	m_RedMemberExterior(red),
-	m_BuleMemberExterior(bule),
+	m_BlueMemberExterior(blue),
 	m_Sum(sum),
 	m_SaveFlag(saveFlag)
 {
@@ -37,8 +37,8 @@ CConfig::CConfig(CListBox* all_ext,
 		m_AllMember_Temp.push_back(*((*all)[i]));
 	for (int i = 0; i < (int)red->size(); ++i)
 		m_RedMember_Temp.push_back(*((*red)[i]));
-	for (int i = 0; i < (int)bule->size(); ++i)
-		m_BuleMember_Temp.push_back(*((*bule)[i]));
+	for (int i = 0; i < (int)blue->size(); ++i)
+		m_BlueMember_Temp.push_back(*((*blue)[i]));
 	for (int i = 0; i < (int)cur->size(); ++i)
 		m_RemainMember_Temp.push_back(*((*cur)[i]));
 }
@@ -56,7 +56,7 @@ void CConfig::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CConfig, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON8, &CConfig::OnBnClickedButton_RedAdd)
-	ON_BN_CLICKED(IDC_BUTTON10, &CConfig::OnBnClickedButtonBuleAdd)
+	ON_BN_CLICKED(IDC_BUTTON10, &CConfig::OnBnClickedButtonBlueAdd)
 	ON_BN_CLICKED(IDC_BUTTON2, &CConfig::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_BUTTON5, &CConfig::OnBnClickedButton5)
 	ON_BN_CLICKED(IDC_BUTTON3, &CConfig::OnBnClickedButton3)
@@ -72,7 +72,7 @@ BOOL CConfig::OnInitDialog()
 	CDialogEx::OnInitDialog();
 
 	m_RedListBox = (CListBox*)GetDlgItem(IDC_LIST4);
-	m_BuleListBox = (CListBox*)GetDlgItem(IDC_LIST3);
+	m_BlueListBox = (CListBox*)GetDlgItem(IDC_LIST3);
 
 	for (int i = 0; i < (int)m_RedMemberExterior->size(); ++i)
 	{
@@ -83,11 +83,11 @@ BOOL CConfig::OnInitDialog()
 			m_RemainMember_Temp.erase(m_RemainMember_Temp.begin() + index);
 	}
 
-	for (int i = 0; i < (int)m_BuleMemberExterior->size(); ++i)
+	for (int i = 0; i < (int)m_BlueMemberExterior->size(); ++i)
 	{
-		m_BuleListBox->AddString((*m_BuleMemberExterior)[i]->name);
-		m_EraseMember.push_back(*(*m_BuleMemberExterior)[i]);
-		int index = find((*m_BuleMemberExterior)[i]->name, m_RemainMember_Temp);
+		m_BlueListBox->AddString((*m_BlueMemberExterior)[i]->name);
+		m_EraseMember.push_back(*(*m_BlueMemberExterior)[i]);
+		int index = find((*m_BlueMemberExterior)[i]->name, m_RemainMember_Temp);
 		if (index != -1)
 			m_RemainMember_Temp.erase(m_RemainMember_Temp.begin() + index);
 	}
@@ -111,10 +111,12 @@ BOOL CConfig::OnInitDialog()
 
 	for (int i = 0; i < (int)m_AllMemberExterior->size(); ++i)
 	{
-		CString money;
+		CString money, flag("");
 		money.Format(_T("%d"), (*m_AllMemberExterior)[i]->money * m_Sum);
 		int row = m_History_LC.InsertItem(i, (*m_AllMemberExterior)[i]->name);
-		m_History_LC.SetItemText(row, 1, money);
+		if ((*m_AllMemberExterior)[i]->money >= 0)
+			flag = "+";
+		m_History_LC.SetItemText(row, 1, flag + money);
 	}
 
 	return TRUE;
@@ -160,7 +162,7 @@ void CConfig::OnBnClickedButton_RedAdd()
 }
 
 //蓝队添加
-void CConfig::OnBnClickedButtonBuleAdd()
+void CConfig::OnBnClickedButtonBlueAdd()
 {
 	CString selectStr;
 	int selectIndex = -1;
@@ -171,9 +173,9 @@ void CConfig::OnBnClickedButtonBuleAdd()
 		return;
 
 	int index1 = find(selectStr, m_RemainMember_Temp);
-	m_BuleListBox->AddString(m_RemainMember_Temp[index1].name);
+	m_BlueListBox->AddString(m_RemainMember_Temp[index1].name);
 	m_EraseMember.push_back(m_RemainMember_Temp[index1]);
-	m_BuleMember_Temp.push_back(m_RemainMember_Temp[index1]);
+	m_BlueMember_Temp.push_back(m_RemainMember_Temp[index1]);
 	m_RemainMember_Temp.erase(m_RemainMember_Temp.begin() + index1);
 }
 
@@ -204,22 +206,22 @@ void CConfig::OnBnClickedButton2()
 void CConfig::OnBnClickedButton5()
 {
 	int selectIndex = -1;
-	CSelectDlg dlg(m_BuleMember_Temp, selectIndex, NULL, _T("请选择要删除的成员"), _T("删除"));
+	CSelectDlg dlg(m_BlueMember_Temp, selectIndex, NULL, _T("请选择要删除的成员"), _T("删除"));
 	dlg.DoModal();
 
 	if (selectIndex == -1)
 		return;
 
 	CString selectStr;
-	m_BuleListBox->GetText(selectIndex, selectStr);
-	m_BuleListBox->DeleteString(selectIndex);
+	m_BlueListBox->GetText(selectIndex, selectStr);
+	m_BlueListBox->DeleteString(selectIndex);
 
 	int index1 = find(selectStr, m_EraseMember);
 	m_RemainMember_Temp.push_back(m_EraseMember[index1]);
 	m_EraseMember.erase(m_EraseMember.begin() + index1);
 
-	int index2 = find(selectStr, m_BuleMember_Temp);
-	m_BuleMember_Temp.erase(m_BuleMember_Temp.begin() + index2);
+	int index2 = find(selectStr, m_BlueMember_Temp);
+	m_BlueMember_Temp.erase(m_BlueMember_Temp.begin() + index2);
 }
 
 //红队清空
@@ -234,10 +236,10 @@ void CConfig::OnBnClickedButton3()
 //蓝队清空
 void CConfig::OnBnClickedButton12()
 {
-	for (int i = 0; i < (int)m_BuleMember_Temp.size(); ++i)
-		m_RemainMember_Temp.push_back(m_BuleMember_Temp[i]);
-	m_BuleMember_Temp.clear();
-	m_BuleListBox->ResetContent();
+	for (int i = 0; i < (int)m_BlueMember_Temp.size(); ++i)
+		m_RemainMember_Temp.push_back(m_BlueMember_Temp[i]);
+	m_BlueMember_Temp.clear();
+	m_BlueListBox->ResetContent();
 }
 
 //编辑
@@ -254,7 +256,7 @@ void CConfig::OnNMClickList5(NMHDR *pNMHDR, LRESULT *pResult)
 	CString newName = name;
 
 	//创建设置成员信息对话框
-	CEditMenber dlg(newName, money, m_Sum);
+	CEditMember dlg(newName, money, m_Sum);
 	dlg.DoModal();
 
 	for (int i = 0; i < (int)m_AllMember_Temp.size(); ++i)
@@ -281,13 +283,13 @@ void CConfig::OnNMClickList5(NMHDR *pNMHDR, LRESULT *pResult)
 		}
 
 		//修改蓝队列表名字
-		index = find(name, m_BuleMember_Temp);
+		index = find(name, m_BlueMember_Temp);
 		if (index != -1)
 		{
-			m_BuleMember_Temp[index].name = newName;
-			index = m_BuleListBox->FindString(0, name);
-			m_BuleListBox->DeleteString(index);
-			m_BuleListBox->AddString(newName);
+			m_BlueMember_Temp[index].name = newName;
+			index = m_BlueListBox->FindString(0, name);
+			m_BlueListBox->DeleteString(index);
+			m_BlueListBox->AddString(newName);
 		}
 
 		//修改外部待分组列表名字
@@ -311,7 +313,7 @@ void CConfig::OnNMClickList5(NMHDR *pNMHDR, LRESULT *pResult)
 void CConfig::OnBnClickedButton13()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	if (m_RedMember_Temp.size() != m_BuleMember_Temp.size())
+	if (m_RedMember_Temp.size() != m_BlueMember_Temp.size())
 	{
 		MessageBox(_T("人员不平均"), _T("提示"), MB_OK);
 		return;
@@ -329,11 +331,11 @@ void CConfig::OnBnClickedButton13()
 		m_RedMemberExterior->push_back((*m_AllMemberExterior)[index]);
 	}
 
-	m_BuleMemberExterior->clear();
-	for (int i = 0; i < (int)m_BuleMember_Temp.size(); ++i)
+	m_BlueMemberExterior->clear();
+	for (int i = 0; i < (int)m_BlueMember_Temp.size(); ++i)
 	{
-		int index = find(m_BuleMember_Temp[i].name, m_AllMemberExterior);
-		m_BuleMemberExterior->push_back((*m_AllMemberExterior)[index]);
+		int index = find(m_BlueMember_Temp[i].name, m_AllMemberExterior);
+		m_BlueMemberExterior->push_back((*m_AllMemberExterior)[index]);
 	}
 
 	SendMessage(WM_CLOSE);

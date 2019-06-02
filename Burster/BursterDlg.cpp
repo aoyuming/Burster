@@ -6,6 +6,7 @@
 #include "Burster.h"
 #include "BursterDlg.h"
 #include "afxdialogex.h"
+#include "projectCommand.h"
 
 
 #ifdef _DEBUG
@@ -39,13 +40,15 @@ BEGIN_MESSAGE_MAP(CBursterDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON4, &CBursterDlg::OnBnClickedButton4_Separate)
 	ON_BN_CLICKED(IDC_BUTTON6, &CBursterDlg::OnBnClickedButton6_Change)
 	ON_WM_CLOSE()
-	ON_BN_CLICKED(IDC_BUTTON5, &CBursterDlg::OnBnClickedButton5_Bule)
+	ON_BN_CLICKED(IDC_BUTTON5, &CBursterDlg::OnBnClickedButton5_Blue)
 	ON_BN_CLICKED(IDC_BUTTON7, &CBursterDlg::OnBnClickedButton7_Red)
 	ON_EN_CHANGE(IDC_EDIT2, &CBursterDlg::OnEnChangeEdit2)
 	ON_BN_CLICKED(IDC_BUTTON9, &CBursterDlg::OnBnClickedButton9)
 	ON_BN_CLICKED(IDC_BUTTON10, &CBursterDlg::OnBnClickedButton10)
 	ON_WM_TIMER()
 	ON_BN_CLICKED(IDC_BUTTON11, &CBursterDlg::OnBnClickedButton11)
+	ON_WM_KEYDOWN()
+	ON_WM_KEYUP()
 END_MESSAGE_MAP()
 
 
@@ -93,34 +96,34 @@ BOOL CBursterDlg::OnInitDialog()
 	LoadConfiguration();
 
 	CListBox* redList = (CListBox*)GetDlgItem(IDC_LIST4);
-	CListBox* buleList = (CListBox*)GetDlgItem(IDC_LIST3);
+	CListBox* blueList = (CListBox*)GetDlgItem(IDC_LIST3);
 	redList->ResetContent();
-	buleList->ResetContent();
+	blueList->ResetContent();
 
-	for( int i = 0; i < m_RedMenberVect.size(); ++i)
-		redList->AddString(m_RedMenberVect[i]->name);
-	for( int i = 0; i < m_BuleMenberVect.size(); ++i)
-		buleList->AddString(m_BuleMenberVect[i]->name);
+	for( int i = 0; i < m_RedMemberVect.size(); ++i)
+		redList->AddString(m_RedMemberVect[i]->name);
+	for( int i = 0; i < m_BlueMemberVect.size(); ++i)
+		blueList->AddString(m_BlueMemberVect[i]->name);
 
 	CListBox* listbox1 = (CListBox*)GetDlgItem(IDC_LIST2);
 	CListBox* listbox2 = (CListBox*)GetDlgItem(IDC_LIST5);
 
-	for (int i = 0; i < m_AllMenberVect.size(); ++i)
+	for (int i = 0; i < m_AllMemberVect.size(); ++i)
 	{
 		char buf[32];
-		_itoa_s(m_AllMenberVect[i]->money * m_Sum,buf,10);
+		_itoa_s(m_AllMemberVect[i]->money * m_Sum,buf,10);
 		
-		if (m_AllMenberVect[i]->money >= 0)
-			listbox2->InsertString(0,m_AllMenberVect[i]->name + " +" + buf);
+		if (m_AllMemberVect[i]->money >= 0)
+			listbox2->InsertString(0,m_AllMemberVect[i]->name + " +" + buf);
 		else
-			listbox2->InsertString(0,m_AllMenberVect[i]->name + " " + buf);
+			listbox2->InsertString(0,m_AllMemberVect[i]->name + " " + buf);
 	}
 
-	for (int i = 0; i < m_CurMenberVect.size(); ++i)
-		listbox1->AddString(m_CurMenberVect[i]->name);
+	for (int i = 0; i < m_CurMemberVect.size(); ++i)
+		listbox1->AddString(m_CurMemberVect[i]->name);
 	
 	//最佳支付方案
-	PayScheme_g(&m_PaySchemeString, &m_AllMenberVect, m_Sum, (CListBox*)GetDlgItem(IDC_LIST6));
+	PayScheme_g(&m_PaySchemeString, &m_AllMemberVect, m_Sum, (CListBox*)GetDlgItem(IDC_LIST6));
 
 	//列表框
 	CListBox* list[] =
@@ -184,17 +187,17 @@ void CBursterDlg::SaveConfiguration()
 	fopen_s(&pf,"config.txt","wb");
 
 	char buf[32];
-	_itoa_s(m_AllMenberVect.size(),buf,10);
+	_itoa_s(m_AllMemberVect.size(),buf,10);
 
 	//全部的人数
 	CString Num = _T("全部人数=") + CString(buf);
 	fwrite(Num.GetBuffer(),Num.GetLength(),1,pf);
 
 	//写入全部成员的信息
-	for (int i = 0; i < m_AllMenberVect.size(); ++i)
+	for (int i = 0; i < m_AllMemberVect.size(); ++i)
 	{
-		_itoa_s(m_AllMenberVect[i]->money,buf,10);
-		CString s = _T("\r\n姓名=") + m_AllMenberVect[i]->name;
+		_itoa_s(m_AllMemberVect[i]->money,buf,10);
+		CString s = _T("\r\n姓名=") + m_AllMemberVect[i]->name;
 		fwrite(s.GetBuffer(),s.GetLength(),1,pf);
 		s = + _T("\r\n金钱=") + CString(buf);
 		fwrite(s.GetBuffer(),s.GetLength(),1,pf);
@@ -203,48 +206,48 @@ void CBursterDlg::SaveConfiguration()
 	fwrite("\r\n",strlen("\r\n"),1,pf);
 
 	//写入鸽子人数
-	_itoa_s(m_DoveMenberVect.size(),buf,10);
+	_itoa_s(m_DoveMemberVect.size(),buf,10);
 	Num = _T("\r\n鸽子人数=") + CString(buf);
 	fwrite(Num.GetBuffer(),Num.GetLength(),1,pf);
 
 	//写入鸽子成员的信息
-	for (int i = 0; i < m_DoveMenberVect.size(); ++i)
+	for (int i = 0; i < m_DoveMemberVect.size(); ++i)
 	{
-		_itoa_s(m_DoveMenberVect[i]->money,buf,10);
-		CString s = _T("\r\n姓名=") + m_DoveMenberVect[i]->name;
+		_itoa_s(m_DoveMemberVect[i]->money,buf,10);
+		CString s = _T("\r\n姓名=") + m_DoveMemberVect[i]->name;
 		fwrite(s.GetBuffer(),s.GetLength(),1,pf);
 	}
 
 	fwrite("\r\n",strlen("\r\n"),1,pf);
 
-	_itoa_s(m_RedMenberVect.size(),buf,10);
+	_itoa_s(m_RedMemberVect.size(),buf,10);
 	Num = _T("\r\n红队人数=") + CString(buf);
 	fwrite(Num.GetBuffer(),Num.GetLength(),1,pf);
 
 	//写入红队人数
-	if (m_RedMenberVect.size() != 0)
+	if (m_RedMemberVect.size() != 0)
 	{
-		for (int i = 0; i < m_RedMenberVect.size(); ++i)
+		for (int i = 0; i < m_RedMemberVect.size(); ++i)
 		{
-			_itoa_s(m_RedMenberVect[i]->money,buf,10);
-			CString s = _T("\r\n姓名=") + m_RedMenberVect[i]->name;
+			_itoa_s(m_RedMemberVect[i]->money,buf,10);
+			CString s = _T("\r\n姓名=") + m_RedMemberVect[i]->name;
 			fwrite(s.GetBuffer(),s.GetLength(),1,pf);
 		}
 	}
 
 	fwrite("\r\n",strlen("\r\n"),1,pf);
 
-	_itoa_s(m_BuleMenberVect.size(),buf,10);
+	_itoa_s(m_BlueMemberVect.size(),buf,10);
 	Num = _T("\r\n蓝队人数=") + CString(buf);
 	fwrite(Num.GetBuffer(),Num.GetLength(),1,pf);
 
 	//写入蓝队人数
-	if (m_BuleMenberVect.size() != 0)
+	if (m_BlueMemberVect.size() != 0)
 	{
-		for (int i = 0; i < m_BuleMenberVect.size(); ++i)
+		for (int i = 0; i < m_BlueMemberVect.size(); ++i)
 		{
-			_itoa_s(m_BuleMenberVect[i]->money,buf,10);
-			CString s = _T("\r\n姓名=") + m_BuleMenberVect[i]->name;
+			_itoa_s(m_BlueMemberVect[i]->money,buf,10);
+			CString s = _T("\r\n姓名=") + m_BlueMemberVect[i]->name;
 			fwrite(s.GetBuffer(),s.GetLength(),1,pf);
 		}
 	}
@@ -274,8 +277,8 @@ bool CBursterDlg::LoadConfiguration()
 		fscanf_s(pf,"\r\n姓名=%s",buf,32);
 		fscanf_s(pf,"\r\n金钱=%d",&p->money);
 		p->name = buf;
-		m_AllMenberVect.push_back(p);
-		m_CurMenberVect.push_back(p);
+		m_AllMemberVect.push_back(p);
+		m_CurMemberVect.push_back(p);
 	}
 
 	//鸽子人数
@@ -286,12 +289,12 @@ bool CBursterDlg::LoadConfiguration()
 	{
 		fscanf_s(pf,"\r\n姓名=%s",buf,32);
 		
-		for (int j = 0; j < m_CurMenberVect.size(); ++j)
+		for (int j = 0; j < m_CurMemberVect.size(); ++j)
 		{
-			if (buf == m_CurMenberVect[j]->name)
+			if (buf == m_CurMemberVect[j]->name)
 			{
-				m_DoveMenberVect.push_back(m_CurMenberVect[j]);
-				m_CurMenberVect.erase(m_CurMenberVect.begin() + j);
+				m_DoveMemberVect.push_back(m_CurMemberVect[j]);
+				m_CurMemberVect.erase(m_CurMemberVect.begin() + j);
 				break;
 			}
 		}
@@ -305,11 +308,11 @@ bool CBursterDlg::LoadConfiguration()
 	{
 		fscanf_s(pf,"\r\n姓名=%s",buf,32);
 
-		for (int j = 0; j < m_CurMenberVect.size(); ++j)
+		for (int j = 0; j < m_CurMemberVect.size(); ++j)
 		{
-			if (buf == m_CurMenberVect[j]->name)
+			if (buf == m_CurMemberVect[j]->name)
 			{
-				m_RedMenberVect.push_back(m_CurMenberVect[j]);
+				m_RedMemberVect.push_back(m_CurMemberVect[j]);
 				break;
 			}
 		}
@@ -323,11 +326,11 @@ bool CBursterDlg::LoadConfiguration()
 	{
 		fscanf_s(pf,"\r\n姓名=%s",buf,32);
 
-		for (int j = 0; j < m_CurMenberVect.size(); ++j)
+		for (int j = 0; j < m_CurMemberVect.size(); ++j)
 		{
-			if (buf == m_CurMenberVect[j]->name)
+			if (buf == m_CurMemberVect[j]->name)
 			{
-				m_BuleMenberVect.push_back(m_CurMenberVect[j]);
+				m_BlueMemberVect.push_back(m_CurMemberVect[j]);
 				break;
 			}
 		}
@@ -342,7 +345,7 @@ bool CBursterDlg::LoadConfiguration()
 		fscanf_s(pf,"\r\n分组时间:%s",buf,64);
 		d.fenZutime = buf;
 
-		int redNum = 0,buleNum = 0;
+		int redNum = 0,blueNum = 0;
 		fscanf_s(pf,"\r\n红队%d",&redNum);
 
 		for (int j = 0; j < redNum; ++j)
@@ -354,15 +357,15 @@ bool CBursterDlg::LoadConfiguration()
 			d.red.push_back(m);
 		}
 
-		fscanf_s(pf,"\r\n蓝队%d",&buleNum);
+		fscanf_s(pf,"\r\n蓝队%d",&blueNum);
 
-		for (int j = 0; j < buleNum; ++j)
+		for (int j = 0; j < blueNum; ++j)
 		{
 			stMember m;
 			fscanf_s(pf,"\r\n  %s  %d",buf,64,&m.money);
 			m.money /= m_Sum;
 			m.name = buf;
-			d.bule.push_back(m);
+			d.blue.push_back(m);
 		}
 		fscanf_s(pf,"\r\n胜利队伍:%s",buf,64);
 		if (strcmp(buf,"未结束") == 0)
@@ -424,10 +427,8 @@ void CBursterDlg::OnBnClickedButton8_Add()
 	//创建添加成员命令
 	AddCommand* add = new AddCommand((CListBox*)GetDlgItem(IDC_LIST5), 
 								  (CListBox*)GetDlgItem(IDC_LIST2),		
-								   &m_AllMenberVect,
-								   &m_CurMenberVect, 
-								   &m_DoveMenberVect,
-								   name);
+								   name,
+								   this);
 	//执行命令
 	add->execute();
 	CommandManager::getInstance()->StoreCommand(add);
@@ -442,17 +443,14 @@ void CBursterDlg::OnBnClickedButton2_Delete()
 	// TODO: 在此添加控件通知处理程序代码
 	CListBox* listbox = (CListBox*)GetDlgItem(IDC_LIST2);
 	int index = -1;
-	CSelectDlg dlg(m_CurMenberVect, index, NULL,  _T("请选择要删除的成员"), _T("删除"));
+	CSelectDlg dlg(m_CurMemberVect, index, NULL,  _T("请选择要删除的成员"), _T("删除"));
 	dlg.DoModal();
 
 	if (index == -1)
 		return;
 
 	//创建添加成员命令
-	EraseCommand* erase = new EraseCommand(listbox,
-										&m_CurMenberVect,
-										&m_DoveMenberVect,
-										index);
+	EraseCommand* erase = new EraseCommand(listbox,index, this);
 	//执行命令
 	erase->execute();
 	CommandManager::getInstance()->StoreCommand(erase);
@@ -481,15 +479,15 @@ void CBursterDlg::OnBnClickedButton3_Clear()
 		list[i]->ResetContent();
 
 	//释放堆内存
-	for (int i = 0; i < (int)m_AllMenberVect.size(); ++i)
-		delete m_AllMenberVect[i];
+	for (int i = 0; i < (int)m_AllMemberVect.size(); ++i)
+		delete m_AllMemberVect[i];
 
-	m_AllMenberVect.clear();
-	m_CurMenberVect.clear();
-	m_RedMenberVect.clear();
-	m_BuleMenberVect.clear();
+	m_AllMemberVect.clear();
+	m_CurMemberVect.clear();
+	m_RedMemberVect.clear();
+	m_BlueMemberVect.clear();
 	m_Data.clear();
-	m_DoveMenberVect.clear();
+	m_DoveMemberVect.clear();
 
 	//释放命令
 	CommandManager::getInstance()->release();
@@ -509,15 +507,15 @@ void CBursterDlg::Save(const char* fn,const char* rb)
 		return;
 	
 
-	if (m_RedMenberVect.size() > 0 || m_BuleMenberVect.size() > 0)
+	if (m_RedMemberVect.size() > 0 || m_BlueMemberVect.size() > 0)
 	{
 		m_Data[m_Data.size() - 1].red.clear();
-		m_Data[m_Data.size() - 1].bule.clear();
-		for (int i = 0; i < m_RedMenberVect.size(); ++i)
-			m_Data[m_Data.size() - 1].red.push_back(*m_RedMenberVect[i]);
+		m_Data[m_Data.size() - 1].blue.clear();
+		for (int i = 0; i < m_RedMemberVect.size(); ++i)
+			m_Data[m_Data.size() - 1].red.push_back(*m_RedMemberVect[i]);
 
-		for (int i = 0; i < m_BuleMenberVect.size(); ++i)
-			m_Data[m_Data.size() - 1].bule.push_back(*m_BuleMenberVect[i]);
+		for (int i = 0; i < m_BlueMemberVect.size(); ++i)
+			m_Data[m_Data.size() - 1].blue.push_back(*m_BlueMemberVect[i]);
 	}
 
 	FILE* pf = 0;
@@ -552,10 +550,10 @@ void CBursterDlg::Save(const char* fn,const char* rb)
 		}
 
 		fwrite("\r\n",strlen("\r\n"),1,pf);
-		sprintf_s(buf,"蓝队%d",m_Data[i].bule.size());
+		sprintf_s(buf,"蓝队%d",m_Data[i].blue.size());
 		fwrite(buf,strlen(buf),1,pf);
 		fwrite("\r\n",strlen("\r\n"),1,pf);
-		for (vector<stMember>::iterator it = m_Data[i].bule.begin(); it != m_Data[i].bule.end(); ++it)
+		for (vector<stMember>::iterator it = m_Data[i].blue.begin(); it != m_Data[i].blue.end(); ++it)
 		{
 			CString s1 = _T("");
 			s1 = (*it).money > 0 ? _T("+") : _T("");
@@ -602,12 +600,12 @@ void CBursterDlg::Save(const char* fn,const char* rb)
 	fwrite("战绩情况",strlen("战绩情况"),1,pf);
 	fwrite("\r\n",strlen("\r\n"),1,pf);
 	//写入所有人的账单
-	for (int i = 0; i < m_AllMenberVect.size(); ++i)
+	for (int i = 0; i < m_AllMemberVect.size(); ++i)
 	{
 		CString s1 = _T("");
-		s1 = m_AllMenberVect[i]->money > 0 ? _T("+") : _T("");
-		_itoa_s(m_AllMenberVect[i]->money * m_Sum,buf,10);
-		CString s2 = m_AllMenberVect[i]->name + _T("  ") + s1 + buf;
+		s1 = m_AllMemberVect[i]->money > 0 ? _T("+") : _T("");
+		_itoa_s(m_AllMemberVect[i]->money * m_Sum,buf,10);
+		CString s2 = m_AllMemberVect[i]->name + _T("  ") + s1 + buf;
 		fwrite(s2.GetBuffer(),s2.GetLength(),1,pf);
 		fwrite("\r\n",strlen("\r\n"),1,pf);
 	}
@@ -641,13 +639,13 @@ void CBursterDlg::Save(const char* fn,const char* rb)
 void CBursterDlg::OnBnClickedButton4_Separate()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	if (m_CurMenberVect.size() % 2 != 0 || m_CurMenberVect.size() < 2)
+	if (m_CurMemberVect.size() % 2 != 0 || m_CurMemberVect.size() < 2)
 	{
 		MessageBox(_TEXT("人数不平均"),_TEXT("提示"),MB_OK);
 		return;
 	}
 
-	if (m_RedMenberVect.size() > 0 || m_BuleMenberVect.size() > 0)
+	if (m_RedMemberVect.size() > 0 || m_BlueMemberVect.size() > 0)
 	{
 		if (MessageBox(_TEXT("是否重新分组"),_TEXT("提示"),MB_YESNO) == IDNO)
 			return;
@@ -657,11 +655,8 @@ void CBursterDlg::OnBnClickedButton4_Separate()
 
 	//创建分组命令
 	GroupingCommand* grouoping = new GroupingCommand((CListBox*)GetDlgItem(IDC_LIST4),
-													(CListBox*)GetDlgItem(IDC_LIST3),
-													&m_CurMenberVect,
-													&m_RedMenberVect,
-													&m_BuleMenberVect,
-													&m_Data);
+												 (CListBox*)GetDlgItem(IDC_LIST3),
+												 this);
 	grouoping->execute();
 	CommandManager::getInstance()->StoreCommand(grouoping);
 }
@@ -673,9 +668,7 @@ void CBursterDlg::OnBnClickedButton6_Change()
 	ChangedMoneyCommand* com = new ChangedMoneyCommand((CListBox*)GetDlgItem(IDC_LIST5),
 													(CListBox*)GetDlgItem(IDC_LIST6),
 													(CEdit*)GetDlgItem(IDC_EDIT2),
-													&m_AllMenberVect,
-													&m_PaySchemeString,
-													&m_Sum);
+													this);
 	com->execute();
 	CommandManager::getInstance()->StoreCommand(com);
 }
@@ -687,14 +680,14 @@ void CBursterDlg::OnClose()
 	SaveConfiguration();
 	Save("战绩情况.txt","wb");
 
-	for (int i = 0; i < (int)m_AllMenberVect.size(); ++i)
-		delete m_AllMenberVect[i];
+	for (int i = 0; i < (int)m_AllMemberVect.size(); ++i)
+		delete m_AllMemberVect[i];
 
 	CDialogEx::OnClose();
 }
 
 //蓝队胜利
-void CBursterDlg::OnBnClickedButton5_Bule()
+void CBursterDlg::OnBnClickedButton5_Blue()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	if (MessageBox(_TEXT("蓝队胜利?"),_TEXT("提示"),MB_YESNO) == IDNO)
@@ -705,13 +698,8 @@ void CBursterDlg::OnBnClickedButton5_Bule()
 									(CListBox*)GetDlgItem(IDC_LIST3),
 									(CListBox*)GetDlgItem(IDC_LIST5),
 									(CListBox*)GetDlgItem(IDC_LIST6),
-									&m_AllMenberVect,
-									&m_RedMenberVect,
-									&m_BuleMenberVect,
-									&m_PaySchemeString,
-									&m_Data,
-									m_Sum,
-									false);
+									false,
+									this);
 	win->execute();
 	CommandManager::getInstance()->StoreCommand(win);
 }
@@ -722,18 +710,14 @@ void CBursterDlg::OnBnClickedButton7_Red()
 	// TODO: 在此添加控件通知处理程序代码
 	if (MessageBox(_TEXT("红队胜利?"),_TEXT("提示"),MB_YESNO) == IDNO)
 		return;
+
 	//创建胜利命令
 	WinCommand* win = new WinCommand((CListBox*)GetDlgItem(IDC_LIST4),
 									(CListBox*)GetDlgItem(IDC_LIST3),
 									(CListBox*)GetDlgItem(IDC_LIST5),
 									(CListBox*)GetDlgItem(IDC_LIST6),
-									&m_AllMenberVect,
-									&m_RedMenberVect,
-									&m_BuleMenberVect,
-									&m_PaySchemeString,
-									&m_Data,
-									m_Sum,
-									true);
+									true,
+									this);
 	win->execute();
 	CommandManager::getInstance()->StoreCommand(win);
 }
@@ -779,10 +763,10 @@ void CBursterDlg::OnTimer(UINT_PTR nIDEvent)
 		redo->EnableWindow(RedoSize > 0 ? TRUE : FALSE);
 
 		CListBox* red = (CListBox*)GetDlgItem(IDC_LIST4);
-		CListBox* bule = (CListBox*)GetDlgItem(IDC_LIST3);
+		CListBox* blue = (CListBox*)GetDlgItem(IDC_LIST3);
 		//CButton* btn1 = (CButton*)GetDlgItem(IDC_BUTTON8);
 		CButton* btn2 = (CButton*)GetDlgItem(IDC_BUTTON2);
-		bool enable = (red->GetCount() == 0 && bule->GetCount() == 0);
+		bool enable = (red->GetCount() == 0 && blue->GetCount() == 0);
 		//btn1->EnableWindow(enable);
 		btn2->EnableWindow(enable);
 	}
@@ -793,7 +777,7 @@ void CBursterDlg::OnTimer(UINT_PTR nIDEvent)
 //设置
 void CBursterDlg::OnBnClickedButton11()
 {
-	if (m_CurMenberVect.size() % 2 != 0)
+	if (m_CurMemberVect.size() % 2 != 0)
 	{
 		MessageBox(_T("人员不平均"), _T("提示"), MB_OK);
 		return;
@@ -802,18 +786,31 @@ void CBursterDlg::OnBnClickedButton11()
 	//创建配置命令
 	ConfigCommand* com = new ConfigCommand((CListBox*)GetDlgItem(IDC_LIST2),
 										(CListBox*)GetDlgItem(IDC_LIST5),
-										(CListBox*)GetDlgItem(IDC_LIST4),
 										(CListBox*)GetDlgItem(IDC_LIST3),
+										(CListBox*)GetDlgItem(IDC_LIST4),
 										(CListBox*)GetDlgItem(IDC_LIST6),
-										&m_CurMenberVect,
-										&m_AllMenberVect,
-										&m_BuleMenberVect,
-										&m_RedMenberVect,
-										&m_DoveMenberVect,
-										&m_Data,
-										m_Sum);
+										 this);
 	//执行命令
 	com->execute();
 	CommandManager::getInstance()->StoreCommand(com);
 
+}
+
+//键盘按下
+void CBursterDlg::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	CDialogEx::OnKeyDown(nChar, nRepCnt, nFlags);
+	if (nChar == VK_SHIFT)
+	{
+	}
+}
+
+//键盘弹起
+void CBursterDlg::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+
+	CDialogEx::OnKeyUp(nChar, nRepCnt, nFlags);
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include "menber.h"
+#include "member.h"
 #include "afxcmn.h"
 
 // CConfig 对话框
@@ -12,26 +12,26 @@ class CConfig : public CDialogEx
 	int m_Sum;//底注
 	vector<stMember*>* m_AllMemberExterior;
 	vector<stMember*>* m_RedMemberExterior;
-	vector<stMember*>* m_BuleMemberExterior;
+	vector<stMember*>* m_BlueMemberExterior;
 	vector<stMember*>* m_CurMemberExterior;
 
 	vector<stMember> m_CurMember_Temp;
 	vector<stMember> m_AllMember_Temp;
 	vector<stMember> m_RedMember_Temp;
-	vector<stMember> m_BuleMember_Temp;
+	vector<stMember> m_BlueMember_Temp;
 	vector<stMember> m_RemainMember_Temp;//剩下可以添加的玩家列表
 	vector<stMember> m_EraseMember;
 
 	CListBox* m_AllListBoxExternal;//外部的所有成员listbox
 	CListBox* m_RedListBox;
-	CListBox* m_BuleListBox;
+	CListBox* m_BlueListBox;
 
 public:
 	CConfig(CListBox* all_ext,
 			vector<stMember*>* cur,
 			vector<stMember*>* all, 
 			vector<stMember*>* red, 
-			vector<stMember*>* bule,
+			vector<stMember*>* blue,
 			int sum,
 			bool& saveFlag,
 			CWnd* pParent = NULL);   // 标准构造函数
@@ -48,7 +48,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedButton_RedAdd();
-	afx_msg void OnBnClickedButtonBuleAdd();
+	afx_msg void OnBnClickedButtonBlueAdd();
 	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedButton5();
 	afx_msg void OnBnClickedButton3();

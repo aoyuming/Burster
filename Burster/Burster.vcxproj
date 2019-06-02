@@ -104,9 +104,9 @@
     <ClInclude Include="BursterDlg.h" />
     <ClInclude Include="Command.h" />
     <ClInclude Include="Config.h" />
-    <ClInclude Include="EditMenber.h" />
+    <ClInclude Include="EditMember.h" />
     <ClInclude Include="SelectDlg.h" />
-    <ClInclude Include="menber.h" />
+    <ClInclude Include="member.h" />
     <ClInclude Include="projectCommand.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -119,7 +119,7 @@
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="EditMenber.cpp" />
-    <ClCompile Include="menber.cpp" />
+    <ClCompile Include="member.cpp" />
     <ClCompile Include="SelectDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

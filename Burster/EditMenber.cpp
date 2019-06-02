@@ -3,16 +3,16 @@
 
 #include "stdafx.h"
 #include "Burster.h"
-#include "EditMenber.h"
+#include "EditMember.h"
 #include "afxdialogex.h"
 #include <vector>
 
 
 // CEditMenber 对话框
 
-IMPLEMENT_DYNAMIC(CEditMenber, CDialogEx)
+IMPLEMENT_DYNAMIC(CEditMember, CDialogEx)
 
-CEditMenber::CEditMenber(CString& name, CString& money, int nSum, CWnd* pParent /*=NULL*/)
+CEditMember::CEditMember(CString& name, CString& money, int nSum, CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_EDIT_MENBER, pParent),
 	m_sName(name),
 	m_sMoney(money), 
@@ -22,11 +22,11 @@ CEditMenber::CEditMenber(CString& name, CString& money, int nSum, CWnd* pParent 
 
 }
 
-CEditMenber::~CEditMenber()
+CEditMember::~CEditMember()
 {
 }
 
-void CEditMenber::DoDataExchange(CDataExchange* pDX)
+void CEditMember::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_EDIT4, m_Name_Edit);
@@ -35,17 +35,17 @@ void CEditMenber::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(CEditMenber, CDialogEx)
-	ON_BN_CLICKED(IDC_BUTTON1, &CEditMenber::OnBnClickedButton1)
-	ON_BN_CLICKED(IDC_BUTTON2, &CEditMenber::OnBnClickedButton2)
-	ON_BN_CLICKED(IDC_RADIO1, &CEditMenber::OnBnClickedRadio1_lose)
-	ON_BN_CLICKED(IDC_RADIO2, &CEditMenber::OnBnClickedRadio2)
-	ON_BN_CLICKED(IDC_RADIO3, &CEditMenber::OnBnClickedRadio3)
-	ON_CBN_CLOSEUP(IDC_COMBO1, &CEditMenber::OnCbnCloseupCombo1)
+BEGIN_MESSAGE_MAP(CEditMember, CDialogEx)
+	ON_BN_CLICKED(IDC_BUTTON1, &CEditMember::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON2, &CEditMember::OnBnClickedButton2)
+	ON_BN_CLICKED(IDC_RADIO1, &CEditMember::OnBnClickedRadio1_lose)
+	ON_BN_CLICKED(IDC_RADIO2, &CEditMember::OnBnClickedRadio2)
+	ON_BN_CLICKED(IDC_RADIO3, &CEditMember::OnBnClickedRadio3)
+	ON_CBN_CLOSEUP(IDC_COMBO1, &CEditMember::OnCbnCloseupCombo1)
 END_MESSAGE_MAP()
 
 //初始化
-BOOL CEditMenber::OnInitDialog()
+BOOL CEditMember::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 	
@@ -95,7 +95,7 @@ BOOL CEditMenber::OnInitDialog()
 
 // CEditMenber 消息处理程序
 //确定
-void CEditMenber::OnBnClickedButton1()
+void CEditMember::OnBnClickedButton1()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	m_Name_Edit.GetWindowText(m_sName);
@@ -104,14 +104,14 @@ void CEditMenber::OnBnClickedButton1()
 }
 
 //取消
-void CEditMenber::OnBnClickedButton2()
+void CEditMember::OnBnClickedButton2()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	SendMessage(WM_CLOSE);
 }
 
 //输选中
-void CEditMenber::OnBnClickedRadio1_lose()
+void CEditMember::OnBnClickedRadio1_lose()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	if (m_Select == LOSE)
@@ -131,7 +131,7 @@ void CEditMenber::OnBnClickedRadio1_lose()
 }
 
 //赢选中
-void CEditMenber::OnBnClickedRadio2()
+void CEditMember::OnBnClickedRadio2()
 {
 	if (m_Select == WIN)
 		return;
@@ -150,7 +150,7 @@ void CEditMenber::OnBnClickedRadio2()
 }
 
 //不输不赢选中
-void CEditMenber::OnBnClickedRadio3()
+void CEditMember::OnBnClickedRadio3()
 {
 	if (m_Select == NO_WIN_LOSE)
 		return;
@@ -163,7 +163,7 @@ void CEditMenber::OnBnClickedRadio3()
 }
 
 //选中金额
-void CEditMenber::OnCbnCloseupCombo1()
+void CEditMember::OnCbnCloseupCombo1()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	CString money;

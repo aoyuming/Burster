@@ -1,6 +1,5 @@
 
 // BursterDlg.h : 头文件
-//
 
 #pragma once
 #include <list>
@@ -10,8 +9,7 @@
 #include <time.h>
 #include "addName.h"
 #include "SelectDlg.h"
-#include "menber.h"
-#include "projectCommand.h"
+#include "member.h"
 #include "Config.h"
 
 // CBursterDlg 对话框
@@ -26,26 +24,25 @@ public:
 
 	addName* m_addNameDlg;
 
-	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
 	//赌金
 	int m_Sum;
 
 	//当前成员列表
-	vector<stMember*> m_CurMenberVect;
+	vector<stMember*> m_CurMemberVect;
 
 	//所有成员表
-	vector<stMember*> m_AllMenberVect;
+	vector<stMember*> m_AllMemberVect;
 
 	//蓝队表
-	vector<stMember*> m_BuleMenberVect;
+	vector<stMember*> m_BlueMemberVect;
 
 	//红队表
-	vector<stMember*> m_RedMenberVect;
+	vector<stMember*> m_RedMemberVect;
 
 	//鸽子表
-	vector<stMember*> m_DoveMenberVect;
+	vector<stMember*> m_DoveMemberVect;
 
 	//支付方案
 	vector<CString> m_PaySchemeString;
@@ -83,11 +80,13 @@ public:
 	afx_msg void OnBnClickedButton4_Separate();
 	afx_msg void OnBnClickedButton6_Change();
 	afx_msg void OnClose();
-	afx_msg void OnBnClickedButton5_Bule();
+	afx_msg void OnBnClickedButton5_Blue();
 	afx_msg void OnBnClickedButton7_Red();
 	afx_msg void OnEnChangeEdit2();
 	afx_msg void OnBnClickedButton9();
 	afx_msg void OnBnClickedButton10();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnBnClickedButton11();
+	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
 };

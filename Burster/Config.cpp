@@ -251,6 +251,10 @@ void CConfig::OnNMClickList5(NMHDR *pNMHDR, LRESULT *pResult)
 
 	//得到选中的行
 	int rank = m_History_LC.GetSelectionMark();
+
+	if (m_AllMemberExterior->size() == 0 || rank > m_AllMemberExterior->size() )
+		return;
+
 	CString name = m_History_LC.GetItemText(rank, 0);
 	CString money = m_History_LC.GetItemText(rank, 1);
 	CString newName = name;

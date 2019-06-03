@@ -10,7 +10,8 @@
 #include "addName.h"
 #include "SelectDlg.h"
 #include "member.h"
-#include "Config.h"
+
+class CConfig;
 
 // CBursterDlg 对话框
 class CBursterDlg : public CDialogEx
@@ -26,8 +27,26 @@ public:
 
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV 支持
 
+	friend class AddCommand;
+	friend class EraseCommand;
+	friend class GroupingCommand;
+	friend class WinCommand;
+	friend class ChangedMoneyCommand;
+	friend class ConfigCommand;
+	friend class CConfig;
+
+private:
+	
 	//赌金
 	int m_Sum;
+
+	CListBox* m_CurListBox;
+	CListBox* m_RedListBox;
+	CListBox* m_BlueListBox;
+	CListBox* m_AllListBox;
+	CListBox* m_PaySchemeListBox;//最佳支付方案
+
+	CEdit* m_SumEdit;
 
 	//当前成员列表
 	vector<stMember*> m_CurMemberVect;
@@ -59,10 +78,6 @@ public:
 	//加载配置文件
 	bool LoadConfiguration();
 
-	//判断stMember是否在vect里面
-	stMember* IsMemberInVect(stMember m,vector<stMember*>& ls);
-	int IsMemberInVect_index(stMember m, vector<stMember*>& ls);
-
 // 实现
 protected:
 	HICON m_hIcon;
@@ -82,11 +97,9 @@ public:
 	afx_msg void OnClose();
 	afx_msg void OnBnClickedButton5_Blue();
 	afx_msg void OnBnClickedButton7_Red();
-	afx_msg void OnEnChangeEdit2();
 	afx_msg void OnBnClickedButton9();
 	afx_msg void OnBnClickedButton10();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnBnClickedButton11();
-	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-	afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg virtual BOOL PreTranslateMessage(MSG* pMsg);
 };

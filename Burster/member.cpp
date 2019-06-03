@@ -42,7 +42,7 @@ int IsMemberInVect_index(stMember m, vector<stMember*>& ls)
 void PayScheme_g(vector<CString>* paySchemeString, 
 				vector<stMember*>* allMemberVect, 
 				int sum,
-				CListBox* historyListBox)
+				CListBox* payListBox)
 {
 	paySchemeString->clear();
 	char buf[32];
@@ -150,8 +150,8 @@ void PayScheme_g(vector<CString>* paySchemeString,
 		paySchemeString->push_back(s);
 	}
 
-	historyListBox->ResetContent();
+	payListBox->ResetContent();
 
 	for (int i = 0; i < paySchemeString->size(); ++i)
-		historyListBox->InsertString(0, (*paySchemeString)[i]);
+		payListBox->InsertString(0, (*paySchemeString)[i]);
 }

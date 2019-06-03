@@ -1,19 +1,19 @@
 #pragma once
 #include "member.h"
 #include "afxcmn.h"
+#include "BursterDlg.h"
 
 // CConfig 对话框
+
 
 class CConfig : public CDialogEx
 {
 	DECLARE_DYNAMIC(CConfig)
 
+	CBursterDlg* m_MainDlg;
+	#define _M m_MainDlg
+
 	bool& m_SaveFlag;//是否保存
-	int m_Sum;//底注
-	vector<stMember*>* m_AllMemberExterior;
-	vector<stMember*>* m_RedMemberExterior;
-	vector<stMember*>* m_BlueMemberExterior;
-	vector<stMember*>* m_CurMemberExterior;
 
 	vector<stMember> m_CurMember_Temp;
 	vector<stMember> m_AllMember_Temp;
@@ -27,14 +27,7 @@ class CConfig : public CDialogEx
 	CListBox* m_BlueListBox;
 
 public:
-	CConfig(CListBox* all_ext,
-			vector<stMember*>* cur,
-			vector<stMember*>* all, 
-			vector<stMember*>* red, 
-			vector<stMember*>* blue,
-			int sum,
-			bool& saveFlag,
-			CWnd* pParent = NULL);   // 标准构造函数
+	CConfig(bool& saveFlag, CBursterDlg* pParent = NULL);   // 标准构造函数
 	virtual ~CConfig();
 
 // 对话框数据

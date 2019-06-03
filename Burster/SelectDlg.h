@@ -14,7 +14,6 @@ class CSelectDlg : public CDialogEx
 	CString* m_Select;
 	vector<stMember> m_CurMember;
 
-
 public:
 	CSelectDlg(const vector<stMember*>& cur, int& index, CString* select,  CString hint, 
 			CString verify, CWnd* pParent = NULL);   // 标准构造函数

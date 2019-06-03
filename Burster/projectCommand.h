@@ -7,17 +7,14 @@
 #include "member.h"
 #include "Config.h"
 
-#define MD m_MainDlg
-
+#define _MD m_MainDlg
 
 //添加命令
 class AddCommand : public Command
 {
 private:
 	CBursterDlg* m_MainDlg;//主窗口类
-	CListBox* m_AllListBox;
-	CListBox* m_CurListBox;
-	CString m_name;
+	CString m_AddName;
 
 	bool m_Undo;//是否撤回
 	stMember* m_NewMember;//添加的成员 如果撤回的话 要自己delete掉
@@ -25,23 +22,22 @@ private:
 	vector<stMember*> m_AllMemberVect_Undo_Temp;
 	vector<stMember*> m_CurMemberVect_Undo_Temp;
 	vector<stMember*> m_DoveMemberVect_Undo_Temp;
+
 	vector<stMember*> m_AllMemberVect_Redo_Temp;
 	vector<stMember*> m_CurMemberVect_Redo_Temp;
 	vector<stMember*> m_DoveMemberVect_Redo_Temp;
 public:
 
-	AddCommand(CListBox* all, CListBox* cur, CString name, CBursterDlg* pDlg)
+	AddCommand(CString name, CBursterDlg* pDlg)
 		:
-		m_AllListBox(all),
-		m_CurListBox(cur),
-		m_name(name),
+		m_AddName(name),
 		m_NewMember(NULL),
 		m_Undo(false),
 		m_MainDlg(pDlg)
 	{
-		m_AllMemberVect_Undo_Temp = MD->m_AllMemberVect;
-		m_CurMemberVect_Undo_Temp = MD->m_CurMemberVect;
-		m_DoveMemberVect_Undo_Temp = MD->m_DoveMemberVect;
+		m_AllMemberVect_Undo_Temp = _MD->m_AllMemberVect;
+		m_CurMemberVect_Undo_Temp = _MD->m_CurMemberVect;
+		m_DoveMemberVect_Undo_Temp = _MD->m_DoveMemberVect;
 	}
 
 	virtual	~AddCommand()
@@ -50,14 +46,13 @@ public:
 			delete m_NewMember;
 	}
 
-
 	//执行命令
 	virtual void execute()
 	{
 		// TODO: 在此添加控件通知处理程序代码
 		stMember* m = new stMember;
 		m->money = 0;
-		m->name = m_name;
+		m->name = m_AddName;
 		
 		if (m->name == _TEXT(""))
 		{
@@ -66,27 +61,27 @@ public:
 		}
 
 		//判断当前成员是否在全部玩家列表中
-		stMember* p = IsMemberInVect(*m, MD->m_AllMemberVect);
+		stMember* p = IsMemberInVect(*m, _MD->m_AllMemberVect);
 
 		//没有重复才添加
 		if (NULL == p)
 		{
-			m_CurListBox->AddString(m->name);
-			m_AllListBox->AddString(m->name + _TEXT("  +0"));
-			MD->m_CurMemberVect.push_back(m);
-			MD->m_AllMemberVect.push_back(m);
+			_MD->m_CurListBox->AddString(m->name);
+			_MD->m_AllListBox->AddString(m->name + _TEXT("  +0"));
+			_MD->m_CurMemberVect.push_back(m);
+			_MD->m_AllMemberVect.push_back(m);
 		}
 		else
 		{
-			if (NULL == IsMemberInVect(*p, MD->m_CurMemberVect))
+			if (NULL == IsMemberInVect(*p, _MD->m_CurMemberVect))
 			{
-				MD->m_CurMemberVect.push_back(p);
-				m_CurListBox->AddString(p->name);
-				for (int i = 0; i < MD->m_DoveMemberVect.size(); ++i)
+				_MD->m_CurMemberVect.push_back(p);
+				_MD->m_CurListBox->AddString(p->name);
+				for (int i = 0; i < (int)_MD->m_DoveMemberVect.size(); ++i)
 				{
-					if (m->name == (MD->m_DoveMemberVect)[i]->name)
+					if (m->name == _MD->m_DoveMemberVect[i]->name)
 					{
-						MD->m_DoveMemberVect.erase(MD->m_DoveMemberVect.begin() + i);
+						_MD->m_DoveMemberVect.erase(_MD->m_DoveMemberVect.begin() + i);
 						break;
 					}
 				}
@@ -98,9 +93,9 @@ public:
 			delete m;
 		}
 
-		m_AllMemberVect_Redo_Temp = MD->m_AllMemberVect;
-		m_CurMemberVect_Redo_Temp = MD->m_CurMemberVect;
-		m_DoveMemberVect_Redo_Temp = MD->m_DoveMemberVect;
+		m_AllMemberVect_Redo_Temp = _MD->m_AllMemberVect;
+		m_CurMemberVect_Redo_Temp = _MD->m_CurMemberVect;
+		m_DoveMemberVect_Redo_Temp = _MD->m_DoveMemberVect;
 		m_NewMember = m;//记录当前成员
 	}
 
@@ -108,32 +103,44 @@ public:
 	virtual void redo()
 	{
 		m_Undo = false;
-		MD->m_AllMemberVect = m_AllMemberVect_Redo_Temp;
-		MD->m_CurMemberVect = m_CurMemberVect_Redo_Temp;
-		MD->m_DoveMemberVect = m_DoveMemberVect_Redo_Temp;
+		_MD->m_AllMemberVect = m_AllMemberVect_Redo_Temp;
+		_MD->m_CurMemberVect = m_CurMemberVect_Redo_Temp;
+		_MD->m_DoveMemberVect = m_DoveMemberVect_Redo_Temp;
 
-		m_CurListBox->ResetContent();
-		m_AllListBox->ResetContent();
-		for (int i = 0; i < (int)MD->m_CurMemberVect.size(); ++i)
-			m_CurListBox->AddString((MD->m_CurMemberVect)[i]->name);
-		for (int i = 0; i < (int)MD->m_AllMemberVect.size(); ++i)
-			m_AllListBox->AddString((MD->m_AllMemberVect)[i]->name + _T("  +0"));
+		_MD->m_CurListBox->ResetContent();
+		_MD->m_AllListBox->ResetContent();
+		for (int i = 0; i < (int)_MD->m_CurMemberVect.size(); ++i)
+			_MD->m_CurListBox->AddString((_MD->m_CurMemberVect)[i]->name);
+		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
+		{
+			CString money, flag("");
+			money.Format("%d", _MD->m_AllMemberVect[i]->money * _MD->m_Sum);
+			if (_MD->m_AllMemberVect[i]->money >= 0)
+				flag = "+";
+			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _T("  ") + flag + money);
+		}
 	}
 
 	//撤销
 	virtual void undo()
 	{
 		m_Undo = true;
-		MD->m_AllMemberVect = m_AllMemberVect_Undo_Temp;
-		MD->m_CurMemberVect = m_CurMemberVect_Undo_Temp;
-		MD->m_DoveMemberVect = m_DoveMemberVect_Undo_Temp;
+		_MD->m_AllMemberVect = m_AllMemberVect_Undo_Temp;
+		_MD->m_CurMemberVect = m_CurMemberVect_Undo_Temp;
+		_MD->m_DoveMemberVect = m_DoveMemberVect_Undo_Temp;
 
-		m_CurListBox->ResetContent();
-		m_AllListBox->ResetContent();
-		for (int i = 0; i < (int)MD->m_CurMemberVect.size(); ++i)
-			m_CurListBox->AddString((MD->m_CurMemberVect)[i]->name);
-		for (int i = 0; i < (int)MD->m_AllMemberVect.size(); ++i)
-			m_AllListBox->AddString((MD->m_AllMemberVect)[i]->name + _T("  +0"));
+		_MD->m_CurListBox->ResetContent();
+		_MD->m_AllListBox->ResetContent();
+		for (int i = 0; i < (int)_MD->m_CurMemberVect.size(); ++i)
+			_MD->m_CurListBox->AddString((_MD->m_CurMemberVect)[i]->name);
+		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
+		{
+			CString money, flag("");
+			money.Format("%d", _MD->m_AllMemberVect[i]->money * _MD->m_Sum);
+			if (_MD->m_AllMemberVect[i]->money >= 0)
+				flag = "+";
+			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _T("  ") + flag + money);
+		}
 	}
 };
 
@@ -144,7 +151,6 @@ private:
 
 	int m_EraseIndex;
 	CBursterDlg* m_MainDlg;//主窗口类
-	CListBox* m_CurListBox;
 
 	vector<stMember*> m_CurMemberVect_Undo_Temp;
 	vector<stMember*> m_DoveMemberVect_Undo_Temp;
@@ -153,14 +159,13 @@ private:
 	vector<stMember*> m_DoveMemberVect_Redo_Temp;
 public:
 
-	EraseCommand(CListBox* cur, int eraseIdx, CBursterDlg* pDlg)
+	EraseCommand(int eraseIdx, CBursterDlg* pDlg)
 		:
-		m_CurListBox(cur),
 		m_EraseIndex(eraseIdx),
 		m_MainDlg(pDlg)
 	{
-		m_CurMemberVect_Undo_Temp = MD->m_CurMemberVect;
-		m_DoveMemberVect_Undo_Temp = MD->m_DoveMemberVect;
+		m_CurMemberVect_Undo_Temp = _MD->m_CurMemberVect;
+		m_DoveMemberVect_Undo_Temp = _MD->m_DoveMemberVect;
 	}
 
 	virtual	~EraseCommand()
@@ -172,43 +177,43 @@ public:
 	virtual void execute()
 	{
 		CString s;
-		m_CurListBox->GetText(m_EraseIndex, s);
-		m_CurListBox->DeleteString(m_EraseIndex);
+		_MD->m_CurListBox->GetText(m_EraseIndex, s);
+		_MD->m_CurListBox->DeleteString(m_EraseIndex);
 
-		for (int i = 0; i < MD->m_CurMemberVect.size(); ++i)
+		for (int i = 0; i < (int)_MD->m_CurMemberVect.size(); ++i)
 		{
-			if ((MD->m_CurMemberVect)[i]->name == s)
+			if (_MD->m_CurMemberVect[i]->name == s)
 			{
-				MD->m_DoveMemberVect.push_back((MD->m_CurMemberVect)[i]);
-				MD->m_CurMemberVect.erase(MD->m_CurMemberVect.begin() + i);
+				_MD->m_DoveMemberVect.push_back(_MD->m_CurMemberVect[i]);
+				_MD->m_CurMemberVect.erase(_MD->m_CurMemberVect.begin() + i);
 				break;
 			}
 		}
 
-		m_CurMemberVect_Redo_Temp = MD->m_CurMemberVect;
-		m_DoveMemberVect_Redo_Temp = MD->m_DoveMemberVect;
+		m_CurMemberVect_Redo_Temp = _MD->m_CurMemberVect;
+		m_DoveMemberVect_Redo_Temp = _MD->m_DoveMemberVect;
 	}
 
 	//重做
 	virtual void redo()
 	{
-		MD->m_CurMemberVect = m_CurMemberVect_Redo_Temp;
-		MD->m_DoveMemberVect = m_DoveMemberVect_Redo_Temp;
+		_MD->m_CurMemberVect = m_CurMemberVect_Redo_Temp;
+		_MD->m_DoveMemberVect = m_DoveMemberVect_Redo_Temp;
 
-		m_CurListBox->ResetContent();
-		for (int i = 0; i < (int)MD->m_CurMemberVect.size(); ++i)
-			m_CurListBox->AddString((MD->m_CurMemberVect)[i]->name);
+		_MD->m_CurListBox->ResetContent();
+		for (int i = 0; i < (int)_MD->m_CurMemberVect.size(); ++i)
+			_MD->m_CurListBox->AddString(_MD->m_CurMemberVect[i]->name);
 	}
 
 	//撤销
 	virtual void undo()
 	{
-		MD->m_CurMemberVect = m_CurMemberVect_Undo_Temp;
-		MD->m_DoveMemberVect = m_DoveMemberVect_Undo_Temp;
+		_MD->m_CurMemberVect = m_CurMemberVect_Undo_Temp;
+		_MD->m_DoveMemberVect = m_DoveMemberVect_Undo_Temp;
 
-		m_CurListBox->ResetContent();
-		for (int i = 0; i < (int)MD->m_CurMemberVect.size(); ++i)
-			m_CurListBox->AddString((MD->m_CurMemberVect)[i]->name);
+		_MD->m_CurListBox->ResetContent();
+		for (int i = 0; i < (int)_MD->m_CurMemberVect.size(); ++i)
+			_MD->m_CurListBox->AddString(_MD->m_CurMemberVect[i]->name);
 	}
 };
 
@@ -218,8 +223,6 @@ class GroupingCommand : public Command
 private:
 
 	CBursterDlg* m_MainDlg;//主窗口类
-	CListBox* m_RedListBox;
-	CListBox* m_BlueListBox;
 
 	//执行命令前的数据
 	vector<stMember*> m_CurMemberVect_Undo_Temp;
@@ -235,18 +238,14 @@ private:
 
 public:
 
-	GroupingCommand(CListBox* redListBox,
-					CListBox* BlueListBox,
-					CBursterDlg* pDlg)
+	GroupingCommand(CBursterDlg* pDlg)
 		:
-		m_RedListBox(redListBox),
-		m_BlueListBox(BlueListBox),
 		m_MainDlg(pDlg)
 	{
-		m_CurMemberVect_Undo_Temp = MD->m_CurMemberVect;
-		m_BlueMemberVect_Undo_Temp = MD->m_BlueMemberVect;
-		m_RedMemberVect_Undo_Temp = MD->m_RedMemberVect;
-		m_Data_Undo_Temp = MD->m_Data;
+		m_CurMemberVect_Undo_Temp = _MD->m_CurMemberVect;
+		m_BlueMemberVect_Undo_Temp = _MD->m_BlueMemberVect;
+		m_RedMemberVect_Undo_Temp = _MD->m_RedMemberVect;
+		m_Data_Undo_Temp = _MD->m_Data;
 	}
 
 	virtual	~GroupingCommand()
@@ -258,12 +257,12 @@ public:
 	virtual void execute()
 	{
 		//分组
-		vector<stMember*> temp = MD->m_CurMemberVect;
-		m_RedListBox->ResetContent();
-		m_BlueListBox->ResetContent();
+		vector<stMember*> temp = _MD->m_CurMemberVect;
+		_MD->m_RedListBox->ResetContent();
+		_MD->m_BlueListBox->ResetContent();
 
-		MD->m_RedMemberVect.clear();
-		MD->m_BlueMemberVect.clear();
+		_MD->m_RedMemberVect.clear();
+		_MD->m_BlueMemberVect.clear();
 
 		bool flag = false;
 
@@ -273,14 +272,14 @@ public:
 
 			if (flag)
 			{
-				MD->m_RedMemberVect.push_back(temp[rd]);
-				m_RedListBox->AddString(temp[rd]->name);
+				_MD->m_RedMemberVect.push_back(temp[rd]);
+				_MD->m_RedListBox->AddString(temp[rd]->name);
 				flag = false;
 			}
 			else
 			{
-				MD->m_BlueMemberVect.push_back(temp[rd]);
-				m_BlueListBox->AddString(temp[rd]->name);
+				_MD->m_BlueMemberVect.push_back(temp[rd]);
+				_MD->m_BlueListBox->AddString(temp[rd]->name);
 				flag = true;
 			}
 			temp.erase(temp.begin() + rd);
@@ -300,49 +299,49 @@ public:
 		stData data;
 		data.fenZutime = buf;
 		data.redLose = 2;
-		MD->m_Data.push_back(data);
+		_MD->m_Data.push_back(data);
 
 		//记录当前信息
-		m_CurMemberVect_Redo_Temp = MD->m_CurMemberVect;
-		m_RedMemberVect_Redo_Temp = MD->m_RedMemberVect;
-		m_BlueMemberVect_Redo_Temp = MD->m_BlueMemberVect;
-		m_Data_Redo_Temp = MD->m_Data;
+		m_CurMemberVect_Redo_Temp = _MD->m_CurMemberVect;
+		m_RedMemberVect_Redo_Temp = _MD->m_RedMemberVect;
+		m_BlueMemberVect_Redo_Temp = _MD->m_BlueMemberVect;
+		m_Data_Redo_Temp = _MD->m_Data;
 	}
 
 	//重做
 	virtual void redo()
 	{
-		MD->m_CurMemberVect = m_CurMemberVect_Redo_Temp;
-		MD->m_RedMemberVect = m_RedMemberVect_Redo_Temp;
-		MD->m_BlueMemberVect = m_BlueMemberVect_Redo_Temp;
-		MD->m_Data = m_Data_Redo_Temp;
+		_MD->m_CurMemberVect = m_CurMemberVect_Redo_Temp;
+		_MD->m_RedMemberVect = m_RedMemberVect_Redo_Temp;
+		_MD->m_BlueMemberVect = m_BlueMemberVect_Redo_Temp;
+		_MD->m_Data = m_Data_Redo_Temp;
 
-		m_BlueListBox->ResetContent();
-		m_RedListBox->ResetContent();
+		_MD->m_BlueListBox->ResetContent();
+		_MD->m_RedListBox->ResetContent();
 
-		for (auto it = MD->m_RedMemberVect.begin(); it != MD->m_RedMemberVect.end(); ++it)
-			m_RedListBox->AddString((*it)->name);
+		for (auto it = _MD->m_RedMemberVect.begin(); it != _MD->m_RedMemberVect.end(); ++it)
+			_MD->m_RedListBox->AddString((*it)->name);
 
-		for (auto it = MD->m_BlueMemberVect.begin(); it != MD->m_BlueMemberVect.end(); ++it)
-			m_BlueListBox->AddString((*it)->name);
+		for (auto it = _MD->m_BlueMemberVect.begin(); it != _MD->m_BlueMemberVect.end(); ++it)
+			_MD->m_BlueListBox->AddString((*it)->name);
 	}
 
 	//撤销
 	virtual void undo()
 	{
-		MD->m_CurMemberVect = m_CurMemberVect_Undo_Temp;
-		MD->m_RedMemberVect = m_RedMemberVect_Undo_Temp;
-		MD->m_BlueMemberVect = m_BlueMemberVect_Undo_Temp;
-		MD->m_Data = m_Data_Undo_Temp;
+		_MD->m_CurMemberVect = m_CurMemberVect_Undo_Temp;
+		_MD->m_RedMemberVect = m_RedMemberVect_Undo_Temp;
+		_MD->m_BlueMemberVect = m_BlueMemberVect_Undo_Temp;
+		_MD->m_Data = m_Data_Undo_Temp;
 
-		m_BlueListBox->ResetContent();
-		m_RedListBox->ResetContent();
+		_MD->m_BlueListBox->ResetContent();
+		_MD->m_RedListBox->ResetContent();
 
-		for (auto it = MD->m_RedMemberVect.begin(); it != MD->m_RedMemberVect.end(); ++it)
-			m_RedListBox->AddString((*it)->name);
+		for (auto it = _MD->m_RedMemberVect.begin(); it != _MD->m_RedMemberVect.end(); ++it)
+			_MD->m_RedListBox->AddString((*it)->name);
 
-		for (auto it = MD->m_BlueMemberVect.begin(); it != MD->m_BlueMemberVect.end(); ++it)
-			m_BlueListBox->AddString((*it)->name);
+		for (auto it = _MD->m_BlueMemberVect.begin(); it != _MD->m_BlueMemberVect.end(); ++it)
+			_MD->m_BlueListBox->AddString((*it)->name);
 	}
 };
 
@@ -353,11 +352,6 @@ private:
 
 	bool m_BlueWin;//胜利队伍
 	CBursterDlg* m_MainDlg;//主窗口类
-
-	CListBox* m_RedListBox;
-	CListBox* m_BlueListBox;
-	CListBox* m_HistoryListBox;
-	CListBox* m_AllListBox;
 
 	//执行命令前的数据
 	vector<CString>  m_PaySchemeString_Undo_Temp;
@@ -375,31 +369,21 @@ private:
 
 public:
 
-	WinCommand(CListBox* redListBox,
-		CListBox* BlueListBox,
-		CListBox* allListBox,
-		CListBox* HistoryListBox,
-		bool redWin,
-		CBursterDlg* pDlg)
+	WinCommand(bool redWin, CBursterDlg* pDlg)
 		:
-
-		m_RedListBox(redListBox),
-		m_BlueListBox(BlueListBox),
-		m_AllListBox(allListBox),
-		m_HistoryListBox(HistoryListBox),
 		m_BlueWin(redWin),
 		m_MainDlg(pDlg)
 	{
 
-		for (int i = 0; i < (int)MD->m_AllMemberVect.size(); ++i)
+		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
-			m_AllMemberVect_Undo_Temp.push_back(*(MD->m_AllMemberVect)[i]);
+			m_AllMemberVect_Undo_Temp.push_back(*_MD->m_AllMemberVect[i]);
 		}
 
-		m_BlueMemberVect_Undo_Temp = MD->m_BlueMemberVect;
-		m_RedMemberVect_Undo_Temp = MD->m_RedMemberVect;
-		m_Data_Undo_Temp = MD->m_Data;
-		m_PaySchemeString_Undo_Temp = MD->m_PaySchemeString;
+		m_BlueMemberVect_Undo_Temp = _MD->m_BlueMemberVect;
+		m_RedMemberVect_Undo_Temp = _MD->m_RedMemberVect;
+		m_Data_Undo_Temp = _MD->m_Data;
+		m_PaySchemeString_Undo_Temp = _MD->m_PaySchemeString;
 	}
 
 	virtual	~WinCommand()
@@ -407,33 +391,32 @@ public:
 
 	}
 
-
 	//执行命令
 	virtual void execute()
 	{
-		for (int i = 0; i < (int)MD->m_BlueMemberVect.size(); ++i)
-			(MD->m_BlueMemberVect)[i]->money += (m_BlueWin ? -1 : 1);
+		for (int i = 0; i < (int)_MD->m_BlueMemberVect.size(); ++i)
+			_MD->m_BlueMemberVect[i]->money += (m_BlueWin ? -1 : 1);
 
-		for (int i = 0; i < (int)MD->m_RedMemberVect.size(); ++i)
-			(MD->m_RedMemberVect)[i]->money += (m_BlueWin ? 1 : -1);
+		for (int i = 0; i < (int)_MD->m_RedMemberVect.size(); ++i)
+			_MD->m_RedMemberVect[i]->money += (m_BlueWin ? 1 : -1);
 
-		m_RedListBox->ResetContent();
-		m_BlueListBox->ResetContent();
-		m_AllListBox->ResetContent();
+		_MD->m_RedListBox->ResetContent();
+		_MD->m_BlueListBox->ResetContent();
+		_MD->m_AllListBox->ResetContent();
 
-		for (int i = 0; i < (int)MD->m_AllMemberVect.size(); ++i)
+		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
 			char buf[32];
 			CString s = _TEXT("");
-			s = (MD->m_AllMemberVect)[i]->money >= 0 ? _TEXT("+") : s;
-			_itoa_s((MD->m_AllMemberVect)[i]->money * MD->m_Sum, buf, 10);
-			m_AllListBox->InsertString(0, (MD->m_AllMemberVect)[i]->name + _TEXT("  ") + s + CString(buf));
+			s = _MD->m_AllMemberVect[i]->money >= 0 ? _TEXT("+") : s;
+			_itoa_s(_MD->m_AllMemberVect[i]->money * _MD->m_Sum, buf, 10);
+			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 
 		//最佳支付方案
-		PayScheme_g(&MD->m_PaySchemeString, &MD->m_AllMemberVect, MD->m_Sum, m_HistoryListBox);
+		PayScheme_g(&_MD->m_PaySchemeString, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 		
-		if (MD->m_Data.size() > 0)
+		if (_MD->m_Data.size() > 0)
 		{
 			CTime time = CTime::GetCurrentTime(); ///构造CTime对象  
 			int m_nYear = time.GetYear(); ///年  
@@ -445,30 +428,28 @@ public:
 
 			char buf[64];
 			sprintf_s(buf, "%d年%d月%d日%d时%d分%d秒", m_nYear, m_nMonth, m_nDay, m_nHour, m_nMinute, m_nSecond);
-			(MD->m_Data)[MD->m_Data.size() - 1].vectoryTmie = buf;
-			(MD->m_Data)[MD->m_Data.size() - 1].redLose = 1;
+			_MD->m_Data[_MD->m_Data.size() - 1].vectoryTmie = buf;
+			_MD->m_Data[_MD->m_Data.size() - 1].redLose = 1;
 
-			for (int i = 0; i < MD->m_RedMemberVect.size(); ++i)
-				(MD->m_Data)[MD->m_Data.size() - 1].red.push_back(*(MD->m_RedMemberVect)[i]);
+			for (int i = 0; i < (int)_MD->m_RedMemberVect.size(); ++i)
+				(_MD->m_Data)[_MD->m_Data.size() - 1].red.push_back(*_MD->m_RedMemberVect[i]);
 
-			for (int i = 0; i < MD->m_BlueMemberVect.size(); ++i)
-				(MD->m_Data)[MD->m_Data.size() - 1].blue.push_back(*(MD->m_BlueMemberVect)[i]);
+			for (int i = 0; i < (int)_MD->m_BlueMemberVect.size(); ++i)
+				(_MD->m_Data)[_MD->m_Data.size() - 1].blue.push_back(*_MD->m_BlueMemberVect[i]);
 		}
 
-		MD->m_BlueMemberVect.clear();
-		MD->m_RedMemberVect.clear();
+		_MD->m_BlueMemberVect.clear();
+		_MD->m_RedMemberVect.clear();
 
 		//保存信息 用于重做
 		m_AllMemberVect_Redo_Temp.clear();
-		for (int i = 0; i < (int)MD->m_AllMemberVect.size(); ++i)
-		{
-			m_AllMemberVect_Redo_Temp.push_back(*(MD->m_AllMemberVect)[i]);
-		}
+		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
+			m_AllMemberVect_Redo_Temp.push_back(*_MD->m_AllMemberVect[i]);
 
-		m_RedMemberVect_Redo_Temp = MD->m_RedMemberVect;
-		m_BlueMemberVect_Redo_Temp = MD->m_BlueMemberVect;
-		m_PaySchemeString_Redo_Temp = MD->m_PaySchemeString;
-		m_Data_Redo_Temp = MD->m_Data;
+		m_RedMemberVect_Redo_Temp = _MD->m_RedMemberVect;
+		m_BlueMemberVect_Redo_Temp = _MD->m_BlueMemberVect;
+		m_PaySchemeString_Redo_Temp = _MD->m_PaySchemeString;
+		m_Data_Redo_Temp = _MD->m_Data;
 	}
 
 	//重做
@@ -476,36 +457,36 @@ public:
 	{
 		for (int i = 0; i < (int)m_AllMemberVect_Redo_Temp.size(); ++i)
 		{
-			(MD->m_AllMemberVect)[i]->money = m_AllMemberVect_Redo_Temp[i].money;
-			(MD->m_AllMemberVect)[i]->name = m_AllMemberVect_Redo_Temp[i].name;
+			_MD->m_AllMemberVect[i]->money = m_AllMemberVect_Redo_Temp[i].money;
+			_MD->m_AllMemberVect[i]->name = m_AllMemberVect_Redo_Temp[i].name;
 		}
 
-		MD->m_RedMemberVect = m_RedMemberVect_Redo_Temp;
-		MD->m_BlueMemberVect = m_BlueMemberVect_Redo_Temp;
-		MD->m_Data = m_Data_Redo_Temp;
-		MD->m_PaySchemeString = m_PaySchemeString_Redo_Temp;
+		_MD->m_RedMemberVect = m_RedMemberVect_Redo_Temp;
+		_MD->m_BlueMemberVect = m_BlueMemberVect_Redo_Temp;
+		_MD->m_Data = m_Data_Redo_Temp;
+		_MD->m_PaySchemeString = m_PaySchemeString_Redo_Temp;
 
-		m_BlueListBox->ResetContent();
-		m_RedListBox->ResetContent();
-		m_HistoryListBox->ResetContent();
-		m_AllListBox->ResetContent();
+		_MD->m_BlueListBox->ResetContent();
+		_MD->m_RedListBox->ResetContent();
+		_MD->m_PaySchemeListBox->ResetContent();
+		_MD->m_AllListBox->ResetContent();
 
 		//最佳支付方案
-		PayScheme_g(&MD->m_PaySchemeString, &MD->m_AllMemberVect, MD->m_Sum, m_HistoryListBox);
+		PayScheme_g(&_MD->m_PaySchemeString, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 
-		for (auto it = MD->m_RedMemberVect.begin(); it != MD->m_RedMemberVect.end(); ++it)
-			m_RedListBox->AddString((*it)->name);
+		for (auto it = _MD->m_RedMemberVect.begin(); it != _MD->m_RedMemberVect.end(); ++it)
+			_MD->m_RedListBox->AddString((*it)->name);
 
-		for (auto it = MD->m_BlueMemberVect.begin(); it != MD->m_BlueMemberVect.end(); ++it)
-			m_BlueListBox->AddString((*it)->name);
+		for (auto it = _MD->m_BlueMemberVect.begin(); it != _MD->m_BlueMemberVect.end(); ++it)
+			_MD->m_BlueListBox->AddString((*it)->name);
 
-		for (int i = 0; i < (int)MD->m_AllMemberVect.size(); ++i)
+		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
 			char buf[32];
 			CString s = _TEXT("");
-			s = (MD->m_AllMemberVect)[i]->money >= 0 ? _TEXT("+") : s;
-			_itoa_s((MD->m_AllMemberVect)[i]->money * MD->m_Sum, buf, 10);
-			m_AllListBox->InsertString(0, (MD->m_AllMemberVect)[i]->name + _TEXT("  ") + s + CString(buf));
+			s = _MD->m_AllMemberVect[i]->money >= 0 ? _TEXT("+") : s;
+			_itoa_s(_MD->m_AllMemberVect[i]->money * _MD->m_Sum, buf, 10);
+			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 	}
 
@@ -514,36 +495,36 @@ public:
 	{
 		for (int i = 0; i < (int)m_AllMemberVect_Undo_Temp.size(); ++i)
 		{
-			(MD->m_AllMemberVect)[i]->money = m_AllMemberVect_Undo_Temp[i].money;
-			(MD->m_AllMemberVect)[i]->name = m_AllMemberVect_Undo_Temp[i].name;
+			_MD->m_AllMemberVect[i]->money = m_AllMemberVect_Undo_Temp[i].money;
+			_MD->m_AllMemberVect[i]->name = m_AllMemberVect_Undo_Temp[i].name;
 		}
 
-		MD->m_RedMemberVect = m_RedMemberVect_Undo_Temp;
-		MD->m_BlueMemberVect = m_BlueMemberVect_Undo_Temp;
-		MD->m_Data = m_Data_Undo_Temp;
-		MD->m_PaySchemeString = m_PaySchemeString_Undo_Temp;
+		_MD->m_RedMemberVect = m_RedMemberVect_Undo_Temp;
+		_MD->m_BlueMemberVect = m_BlueMemberVect_Undo_Temp;
+		_MD->m_Data = m_Data_Undo_Temp;
+		_MD->m_PaySchemeString = m_PaySchemeString_Undo_Temp;
 
-		m_BlueListBox->ResetContent();
-		m_RedListBox->ResetContent();
-		m_HistoryListBox->ResetContent();
-		m_AllListBox->ResetContent();
+		_MD->m_BlueListBox->ResetContent();
+		_MD->m_RedListBox->ResetContent();
+		_MD->m_PaySchemeListBox->ResetContent();
+		_MD->m_AllListBox->ResetContent();
 
 		//最佳支付方案
-		PayScheme_g(&MD->m_PaySchemeString, &MD->m_AllMemberVect, MD->m_Sum, m_HistoryListBox);
+		PayScheme_g(&_MD->m_PaySchemeString, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 
-		for (auto it = MD->m_RedMemberVect.begin(); it != MD->m_RedMemberVect.end(); ++it)
-			m_RedListBox->AddString((*it)->name);
+		for (auto it = _MD->m_RedMemberVect.begin(); it != _MD->m_RedMemberVect.end(); ++it)
+			_MD->m_RedListBox->AddString((*it)->name);
 
-		for (auto it = MD->m_BlueMemberVect.begin(); it != MD->m_BlueMemberVect.end(); ++it)
-			m_BlueListBox->AddString((*it)->name);
+		for (auto it = _MD->m_BlueMemberVect.begin(); it != _MD->m_BlueMemberVect.end(); ++it)
+			_MD->m_BlueListBox->AddString((*it)->name);
 
-		for (int i = 0; i < (int)MD->m_AllMemberVect.size(); ++i)
+		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
 			char buf[32];
 			CString s = _TEXT("");
-			s = (MD->m_AllMemberVect)[i]->money >= 0 ? _TEXT("+") : s;
-			_itoa_s((MD->m_AllMemberVect)[i]->money * MD->m_Sum, buf, 10);
-			m_AllListBox->InsertString(0, (MD->m_AllMemberVect)[i]->name + _TEXT("  ") + s + CString(buf));
+			s = _MD->m_AllMemberVect[i]->money >= 0 ? _TEXT("+") : s;
+			_itoa_s(_MD->m_AllMemberVect[i]->money * _MD->m_Sum, buf, 10);
+			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 	}
 };
@@ -558,10 +539,6 @@ private:
 
 	CBursterDlg* m_MainDlg;//主窗口类
 
-	CListBox* m_HistoryListBox;
-	CListBox* m_AllListBox;
-	CEdit* m_Edit;
-
 	vector<CString>  m_PaySchemeString_Undo_Temp;
 	vector<stMember> m_AllMemberVect_Undo_Temp;
 
@@ -570,24 +547,16 @@ private:
 
 public:
 
-	ChangedMoneyCommand(CListBox* allListBox,
-					CListBox* HistoryListBox,
-					CEdit* edit,
-					CBursterDlg* pDlg)
+	ChangedMoneyCommand(CBursterDlg* pDlg)
 		:
-		m_Edit(edit),
-		m_AllListBox(allListBox),
-		m_HistoryListBox(HistoryListBox),
 		m_MainDlg(pDlg),
 		m_TempSum_Undo(pDlg->m_Sum)
 	{
 
-		for (int i = 0; i < (int)MD->m_AllMemberVect.size(); ++i)
-		{
-			m_AllMemberVect_Undo_Temp.push_back(*(MD->m_AllMemberVect)[i]);
-		}
+		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
+			m_AllMemberVect_Undo_Temp.push_back(*_MD->m_AllMemberVect[i]);
 
-		m_PaySchemeString_Undo_Temp = MD->m_PaySchemeString;
+		m_PaySchemeString_Undo_Temp = _MD->m_PaySchemeString;
 	}
 
 	virtual	~ChangedMoneyCommand()
@@ -599,29 +568,30 @@ public:
 	virtual void execute()
 	{
 		CString s;
-		m_Edit->GetWindowText(s);
-		MD->m_Sum = _ttoi(s);
+		_MD->m_SumEdit->GetWindowText(s);
+		_MD->m_Sum = _ttoi(s);
 
-		m_AllListBox->ResetContent();
+		_MD->m_AllListBox->ResetContent();
 
-		for (int i = 0; i < (int)MD->m_AllMemberVect.size(); ++i)
+		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
 			char buf[32];
 			CString s = _TEXT("");
-			s = (MD->m_AllMemberVect)[i]->money >= 0 ? _TEXT("+") : s;
-			_itoa_s((MD->m_AllMemberVect)[i]->money * (MD->m_Sum), buf, 10);
-			m_AllListBox->InsertString(0, (MD->m_AllMemberVect)[i]->name + _TEXT("  ") + s + CString(buf));
+			s = _MD->m_AllMemberVect[i]->money >= 0 ? _TEXT("+") : s;
+			_itoa_s(_MD->m_AllMemberVect[i]->money * (_MD->m_Sum), buf, 10);
+			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 
 		//最佳支付方案
-		PayScheme_g(&MD->m_PaySchemeString, &MD->m_AllMemberVect, MD->m_Sum, m_HistoryListBox);
+		PayScheme_g(&_MD->m_PaySchemeString, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 
 		//保存信息 用于重做
 		m_AllMemberVect_Redo_Temp.clear();
-		for (int i = 0; i < (int)MD->m_AllMemberVect.size(); ++i)
-			m_AllMemberVect_Redo_Temp.push_back(*(MD->m_AllMemberVect)[i]);
-		m_PaySchemeString_Redo_Temp = MD->m_PaySchemeString;
-		m_TempSum_Redo = MD->m_Sum;
+		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
+			m_AllMemberVect_Redo_Temp.push_back(*_MD->m_AllMemberVect[i]);
+
+		m_PaySchemeString_Redo_Temp = _MD->m_PaySchemeString;
+		m_TempSum_Redo = _MD->m_Sum;
 	}
 
 	//重做
@@ -629,29 +599,29 @@ public:
 	{
 		for (int i = 0; i < (int)m_AllMemberVect_Redo_Temp.size(); ++i)
 		{
-			(MD->m_AllMemberVect)[i]->money = m_AllMemberVect_Redo_Temp[i].money;
-			(MD->m_AllMemberVect)[i]->name = m_AllMemberVect_Redo_Temp[i].name;
+			_MD->m_AllMemberVect[i]->money = m_AllMemberVect_Redo_Temp[i].money;
+			_MD->m_AllMemberVect[i]->name = m_AllMemberVect_Redo_Temp[i].name;
 		}
 
-		MD->m_PaySchemeString = m_PaySchemeString_Redo_Temp;
-		MD->m_Sum = m_TempSum_Redo;
+		_MD->m_PaySchemeString = m_PaySchemeString_Redo_Temp;
+		_MD->m_Sum = m_TempSum_Redo;
 		char buf[32];
-		_itoa_s(MD->m_Sum, buf,32, 10);
-		m_Edit->SetWindowText(_T(buf));
+		_itoa_s(_MD->m_Sum, buf,32, 10);
+		_MD->m_SumEdit->SetWindowText(_T(buf));
 
-		m_HistoryListBox->ResetContent();
-		m_AllListBox->ResetContent();
+		_MD->m_PaySchemeListBox->ResetContent();
+		_MD->m_AllListBox->ResetContent();
 
 		//最佳支付方案
-		PayScheme_g(&MD->m_PaySchemeString, &MD->m_AllMemberVect, MD->m_Sum, m_HistoryListBox);
+		PayScheme_g(&_MD->m_PaySchemeString, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 
-		for (int i = 0; i < (int)MD->m_AllMemberVect.size(); ++i)
+		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
 			char buf[32];
 			CString s = _TEXT("");
-			s = (MD->m_AllMemberVect)[i]->money >= 0 ? _TEXT("+") : s;
-			_itoa_s((MD->m_AllMemberVect)[i]->money * (MD->m_Sum), buf, 10);
-			m_AllListBox->InsertString(0, (MD->m_AllMemberVect)[i]->name + _TEXT("  ") + s + CString(buf));
+			s = _MD->m_AllMemberVect[i]->money >= 0 ? _TEXT("+") : s;
+			_itoa_s(_MD->m_AllMemberVect[i]->money * (_MD->m_Sum), buf, 10);
+			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 	}
 
@@ -660,29 +630,29 @@ public:
 	{
 		for (int i = 0; i < (int)m_AllMemberVect_Undo_Temp.size(); ++i)
 		{
-			(MD->m_AllMemberVect)[i]->money = m_AllMemberVect_Undo_Temp[i].money;
-			(MD->m_AllMemberVect)[i]->name = m_AllMemberVect_Undo_Temp[i].name;
+			_MD->m_AllMemberVect[i]->money = m_AllMemberVect_Undo_Temp[i].money;
+			_MD->m_AllMemberVect[i]->name = m_AllMemberVect_Undo_Temp[i].name;
 		}
 
-		MD->m_PaySchemeString = m_PaySchemeString_Undo_Temp;
-		MD->m_Sum = m_TempSum_Undo;
+		_MD->m_PaySchemeString = m_PaySchemeString_Undo_Temp;
+		_MD->m_Sum = m_TempSum_Undo;
 		char buf[32];
-		_itoa_s(MD->m_Sum, buf, 32, 10);
-		m_Edit->SetWindowText(_T(buf));
+		_itoa_s(_MD->m_Sum, buf, 32, 10);
+		_MD->m_SumEdit->SetWindowText(_T(buf));
 
-		m_HistoryListBox->ResetContent();
-		m_AllListBox->ResetContent();
+		_MD->m_PaySchemeListBox->ResetContent();
+		_MD->m_AllListBox->ResetContent();
 
 		//最佳支付方案
-		PayScheme_g(&MD->m_PaySchemeString, &MD->m_AllMemberVect, MD->m_Sum, m_HistoryListBox);
+		PayScheme_g(&_MD->m_PaySchemeString, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 
-		for (int i = 0; i < (int)MD->m_AllMemberVect.size(); ++i)
+		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
 			char buf[32];
 			CString s = _TEXT("");
-			s = (MD->m_AllMemberVect)[i]->money >= 0 ? _TEXT("+") : s;
-			_itoa_s((MD->m_AllMemberVect)[i]->money * (MD->m_Sum), buf, 10);
-			m_AllListBox->InsertString(0, (MD->m_AllMemberVect)[i]->name + _TEXT("  ") + s + CString(buf));
+			s = (_MD->m_AllMemberVect)[i]->money >= 0 ? _TEXT("+") : s;
+			_itoa_s((_MD->m_AllMemberVect)[i]->money * (_MD->m_Sum), buf, 10);
+			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 	}
 };
@@ -691,13 +661,6 @@ public:
 class ConfigCommand : public Command
 {
 private:
-
-	//外部数据指针
-	CListBox* m_CurListBox;
-	CListBox* m_AllListBox;
-	CListBox* m_BlueListBox;
-	CListBox* m_RedListBox;
-	CListBox* m_HistoryListBox;
 
 	CBursterDlg* m_MainDlg;//主窗口类
 
@@ -717,24 +680,14 @@ private:
 
 public:
 
-	ConfigCommand(CListBox* CurListBox,
-				CListBox* AllListBox,
-				CListBox* BlueListBox,
-				CListBox* RedListBox,
-				CListBox* historyListBox,
-				CBursterDlg* pDlg)
+	ConfigCommand(CBursterDlg* pDlg)
 		:
-		m_CurListBox(CurListBox),
-		m_AllListBox(AllListBox),
-		m_BlueListBox(BlueListBox),
-		m_HistoryListBox(historyListBox),
-		m_RedListBox(RedListBox),
 		m_MainDlg(pDlg)
 	{
-		MemberCopy(m_AllMemberVect_Undo_Temp, MD->m_AllMemberVect);
-		MemberCopy(m_CurMemberVect_Undo_Temp, MD->m_CurMemberVect);
-		MemberCopy(m_BlueMemberVect_Undo_Temp, MD->m_BlueMemberVect);
-		MemberCopy(m_RedMemberVect_Undo_Temp, MD->m_RedMemberVect);
+		MemberCopy(m_AllMemberVect_Undo_Temp, _MD->m_AllMemberVect);
+		MemberCopy(m_CurMemberVect_Undo_Temp, _MD->m_CurMemberVect);
+		MemberCopy(m_BlueMemberVect_Undo_Temp, _MD->m_BlueMemberVect);
+		MemberCopy(m_RedMemberVect_Undo_Temp, _MD->m_RedMemberVect);
 	}
 
 	virtual	~ConfigCommand()
@@ -744,16 +697,9 @@ public:
 	//执行命令
 	virtual void execute()
 	{
-		// TODO: 在此添加控件通知处理程序代码
+		//创建配置窗口
 		bool save = false;
-		CConfig dlg(m_AllListBox,
-					&MD->m_CurMemberVect,
-					&MD->m_AllMemberVect,
-					&MD->m_RedMemberVect,
-					&MD->m_BlueMemberVect,
-					MD->m_Sum,
-					save);
-
+		CConfig dlg(save, m_MainDlg);
 		dlg.DoModal();
 
 		//修改
@@ -764,14 +710,14 @@ public:
 
 			//重新计算最佳支付方案
 			vector<CString> pay;
-			PayScheme_g(&pay, &MD->m_AllMemberVect, MD->m_Sum, m_HistoryListBox);
+			PayScheme_g(&pay, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 		}
 
 		//记录执行命令之后的数据，用于重做
-		MemberCopy(m_AllMemberVect_Redo_Temp, MD->m_AllMemberVect);
-		MemberCopy(m_CurMemberVect_Redo_Temp, MD->m_CurMemberVect);
-		MemberCopy(m_BlueMemberVect_Redo_Temp, MD->m_BlueMemberVect);
-		MemberCopy(m_RedMemberVect_Redo_Temp, MD->m_RedMemberVect);
+		MemberCopy(m_AllMemberVect_Redo_Temp, _MD->m_AllMemberVect);
+		MemberCopy(m_CurMemberVect_Redo_Temp, _MD->m_CurMemberVect);
+		MemberCopy(m_BlueMemberVect_Redo_Temp, _MD->m_BlueMemberVect);
+		MemberCopy(m_RedMemberVect_Redo_Temp, _MD->m_RedMemberVect);
 	}
 
 	//设置各个列表框数据
@@ -779,18 +725,18 @@ public:
 	{
 		CListBox* list[] =
 		{
-			m_CurListBox,
-			m_RedListBox,
-			m_BlueListBox,
-			m_AllListBox
+			_MD->m_CurListBox,
+			_MD->m_RedListBox,
+			_MD->m_BlueListBox,
+			_MD->m_AllListBox
 		};
 
 		vector<stMember*>* vect[] =
 		{
-			&MD->m_CurMemberVect,
-			&MD->m_RedMemberVect,
-			&MD->m_BlueMemberVect,
-			&MD->m_AllMemberVect
+			&_MD->m_CurMemberVect,
+			&_MD->m_RedMemberVect,
+			&_MD->m_BlueMemberVect,
+			&_MD->m_AllMemberVect
 		};
 
 		for (int i = 0; i < 4; ++i)
@@ -800,7 +746,7 @@ public:
 			{
 				CString str = (*it)->name;
 				CString money;
-				money.Format("%d", (*it)->money * MD->m_Sum);
+				money.Format("%d", (*it)->money * _MD->m_Sum);
 				if ((*it)->money >= 0)
 					money = _T("+") + money;
 				if (i == 3)
@@ -814,24 +760,24 @@ public:
 	virtual void redo()
 	{
 		//还原执行命令前的数据
-		MemberCopy(MD->m_AllMemberVect, m_AllMemberVect_Redo_Temp);
+		MemberCopy(_MD->m_AllMemberVect, m_AllMemberVect_Redo_Temp);
 
 		//还原红队列表
-		MD->m_RedMemberVect.clear();
-		for (int i = 0; i < m_RedMemberVect_Redo_Temp.size(); ++i)
+		_MD->m_RedMemberVect.clear();
+		for (int i = 0; i < (int)m_RedMemberVect_Redo_Temp.size(); ++i)
 		{
-			int index = IsMemberInVect_index(m_RedMemberVect_Redo_Temp[i], MD->m_AllMemberVect);
+			int index = IsMemberInVect_index(m_RedMemberVect_Redo_Temp[i], _MD->m_AllMemberVect);
 			if (index != -1)
-				MD->m_RedMemberVect.push_back((MD->m_AllMemberVect)[index]);
+				_MD->m_RedMemberVect.push_back(_MD->m_AllMemberVect[index]);
 		}
 
 		//还原蓝队队列表
-		MD->m_BlueMemberVect.clear();
-		for (int i = 0; i < m_BlueMemberVect_Redo_Temp.size(); ++i)
+		_MD->m_BlueMemberVect.clear();
+		for (int i = 0; i < (int)m_BlueMemberVect_Redo_Temp.size(); ++i)
 		{
-			int index = IsMemberInVect_index(m_BlueMemberVect_Redo_Temp[i], MD->m_AllMemberVect);
+			int index = IsMemberInVect_index(m_BlueMemberVect_Redo_Temp[i], _MD->m_AllMemberVect);
 			if (index != -1)
-				MD->m_BlueMemberVect.push_back((MD->m_AllMemberVect)[index]);
+				_MD->m_BlueMemberVect.push_back(_MD->m_AllMemberVect[index]);
 		}
 
 		//重新刷新列表框数据
@@ -839,31 +785,31 @@ public:
 
 		//重新计算最佳支付方案
 		vector<CString> pay;
-		PayScheme_g(&pay, &MD->m_AllMemberVect, MD->m_Sum, m_HistoryListBox);
+		PayScheme_g(&pay, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 	}
 
 	//撤销
 	virtual void undo()
 	{
 		//还原执行命令前的数据
-		MemberCopy(MD->m_AllMemberVect, m_AllMemberVect_Undo_Temp);
+		MemberCopy(_MD->m_AllMemberVect, m_AllMemberVect_Undo_Temp);
 
 		//还原红队列表
-		MD->m_RedMemberVect.clear();
-		for (int i = 0; i < m_RedMemberVect_Undo_Temp.size(); ++i)
+		_MD->m_RedMemberVect.clear();
+		for (int i = 0; i < (int)m_RedMemberVect_Undo_Temp.size(); ++i)
 		{
-			int index = IsMemberInVect_index(m_RedMemberVect_Undo_Temp[i], MD->m_AllMemberVect);
+			int index = IsMemberInVect_index(m_RedMemberVect_Undo_Temp[i], _MD->m_AllMemberVect);
 			if (index != -1)
-				MD->m_RedMemberVect.push_back((MD->m_AllMemberVect)[index]);
+				_MD->m_RedMemberVect.push_back(_MD->m_AllMemberVect[index]);
 		}
 
 		//还原蓝队队列表
-		MD->m_BlueMemberVect.clear();
-		for (int i = 0; i < m_BlueMemberVect_Undo_Temp.size(); ++i)
+		_MD->m_BlueMemberVect.clear();
+		for (int i = 0; i < (int)m_BlueMemberVect_Undo_Temp.size(); ++i)
 		{
-			int index = IsMemberInVect_index(m_BlueMemberVect_Undo_Temp[i], MD->m_AllMemberVect);
+			int index = IsMemberInVect_index(m_BlueMemberVect_Undo_Temp[i], _MD->m_AllMemberVect);
 			if (index != -1)
-				MD->m_BlueMemberVect.push_back((MD->m_AllMemberVect)[index]);
+				_MD->m_BlueMemberVect.push_back(_MD->m_AllMemberVect[index]);
 		}
 
 		//重新刷新列表框数据
@@ -871,6 +817,6 @@ public:
 
 		//重新计算最佳支付方案
 		vector<CString> pay;
-		PayScheme_g(&pay, &MD->m_AllMemberVect, MD->m_Sum, m_HistoryListBox);
+		PayScheme_g(&pay, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 	}
 };

@@ -33,9 +33,6 @@ BEGIN_MESSAGE_MAP(addName, CDialogEx)
 END_MESSAGE_MAP()
 
 
-// addName 消息处理程序
-
-
 //确定
 void addName::OnBnClickedButton1()
 {

@@ -2,7 +2,7 @@
 #include "Command.h"
 
 CommandManager* CommandManager::m_Instance = NULL;
-CommandManager* CommandManager::getInstance()
+CommandManager* CommandManager::GetInstance()
 {
 	if (NULL == m_Instance)
 		m_Instance = new CommandManager;
@@ -48,8 +48,7 @@ void CommandManager::ClearCommand(std::stack<Command*>& stack)
 	if (stack.empty()) 
 		return;
 
-	Command* cmd = NULL;
-	while (stack.size() > 0)
+	while (!stack.empty())
 	{
 		delete stack.top();
 		stack.pop();
@@ -59,7 +58,7 @@ void CommandManager::ClearCommand(std::stack<Command*>& stack)
 //执行撤销命令
 void CommandManager::undo()
 {
-	if (m_UndoStack.size() <= 0)
+	if (m_UndoStack.empty())
 		return;
 
 	Command* cmd = m_UndoStack.top();
@@ -71,7 +70,7 @@ void CommandManager::undo()
 //执行重做命令
 void CommandManager::redo()
 {
-	if (m_RedoStack.size() <= 0)
+	if (m_RedoStack.empty())
 		return;
 
 	Command* cmd = m_RedoStack.top();
@@ -82,13 +81,13 @@ void CommandManager::redo()
 
 
 //获取撤销命名个数
-int CommandManager::getUndoSize()
+int CommandManager::GetUndoSize()
 {
 	return m_UndoStack.size();
 }
 
 //获取重做命名个数
-int CommandManager::getRedoSize()
+int CommandManager::GetRedoSize()
 {
 	return m_RedoStack.size();
 }

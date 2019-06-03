@@ -28,24 +28,28 @@ private:
 
 public:
 
-	static CommandManager* getInstance();
+	static CommandManager* GetInstance();
 	static void release();
 
 	//存储命令
 	void StoreCommand(Command* cmd);
+
 	//清除所有命令
 	void ClearAllCommand();
+
 	//清除命令
 	void ClearCommand(std::stack<Command*>& stack);
+
 	//执行撤销命令
 	void undo();
+
 	//执行重做命令
 	void redo();
 
 	//获取撤销命名个数
-	int getUndoSize();
+	int GetUndoSize();
 
 	//获取重做命名个数
-	int getRedoSize();
+	int GetRedoSize();
 };
 

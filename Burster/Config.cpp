@@ -14,33 +14,26 @@
 
 IMPLEMENT_DYNAMIC(CConfig, CDialogEx)
 
-CConfig::CConfig(CListBox* all_ext,
-				vector<stMember*>* cur,
-				vector<stMember*>* all,
-				vector<stMember*>* red,
-				vector<stMember*>* blue, 
-				int sum,
-				bool& saveFlag,
-				CWnd* pParent /*=NULL*/)
+CConfig::CConfig(bool& saveFlag,CBursterDlg* pParent /*=NULL*/)
 	: CDialogEx(IDD_SETTING, pParent),
-	m_AllListBoxExternal(all_ext),
-	m_CurMemberExterior(cur),
-	m_AllMemberExterior(all),
-	m_RedMemberExterior(red),
-	m_BlueMemberExterior(blue),
-	m_Sum(sum),
-	m_SaveFlag(saveFlag)
+	m_SaveFlag(saveFlag),
+	m_MainDlg(pParent)
 {
-	for (int i = 0; i < (int)cur->size(); ++i)
-		m_CurMember_Temp.push_back(*((*cur)[i]));
-	for (int i = 0; i < (int)all->size(); ++i)
-		m_AllMember_Temp.push_back(*((*all)[i]));
-	for (int i = 0; i < (int)red->size(); ++i)
-		m_RedMember_Temp.push_back(*((*red)[i]));
-	for (int i = 0; i < (int)blue->size(); ++i)
-		m_BlueMember_Temp.push_back(*((*blue)[i]));
-	for (int i = 0; i < (int)cur->size(); ++i)
-		m_RemainMember_Temp.push_back(*((*cur)[i]));
+	m_AllListBoxExternal = (CListBox*)GetDlgItem(IDC_LIST5);
+	m_RedListBox = (CListBox*)GetDlgItem(IDC_LIST4);
+	m_BlueListBox = (CListBox*)GetDlgItem(IDC_LIST3);
+
+
+	for (int i = 0; i < (int)_M->m_CurMemberVect.size(); ++i)
+		m_CurMember_Temp.push_back(*((_M->m_CurMemberVect)[i]));
+	for (int i = 0; i < (int)_M->m_AllMemberVect.size(); ++i)
+		m_AllMember_Temp.push_back(*((_M->m_AllMemberVect)[i]));
+	for (int i = 0; i < (int)_M->m_RedMemberVect.size(); ++i)
+		m_RedMember_Temp.push_back(*((_M->m_RedMemberVect)[i]));
+	for (int i = 0; i < (int)_M->m_BlueMemberVect.size(); ++i)
+		m_BlueMember_Temp.push_back(*((_M->m_BlueMemberVect)[i]));
+	for (int i = 0; i < (int)_M->m_CurMemberVect.size(); ++i)
+		m_RemainMember_Temp.push_back(*((_M->m_CurMemberVect)[i]));
 }
 
 CConfig::~CConfig()
@@ -74,20 +67,20 @@ BOOL CConfig::OnInitDialog()
 	m_RedListBox = (CListBox*)GetDlgItem(IDC_LIST4);
 	m_BlueListBox = (CListBox*)GetDlgItem(IDC_LIST3);
 
-	for (int i = 0; i < (int)m_RedMemberExterior->size(); ++i)
+	for (int i = 0; i < (int)_M->m_RedMemberVect.size(); ++i)
 	{
-		m_RedListBox->AddString((*m_RedMemberExterior)[i]->name);
-		m_EraseMember.push_back(*(*m_RedMemberExterior)[i]);
-		int index = find((*m_RedMemberExterior)[i]->name, m_RemainMember_Temp);
+		m_RedListBox->AddString((_M->m_RedMemberVect)[i]->name);
+		m_EraseMember.push_back(*(_M->m_RedMemberVect)[i]);
+		int index = find((_M->m_RedMemberVect)[i]->name, m_RemainMember_Temp);
 		if (index != -1)
 			m_RemainMember_Temp.erase(m_RemainMember_Temp.begin() + index);
 	}
 
-	for (int i = 0; i < (int)m_BlueMemberExterior->size(); ++i)
+	for (int i = 0; i < (int)_M->m_BlueMemberVect.size(); ++i)
 	{
-		m_BlueListBox->AddString((*m_BlueMemberExterior)[i]->name);
-		m_EraseMember.push_back(*(*m_BlueMemberExterior)[i]);
-		int index = find((*m_BlueMemberExterior)[i]->name, m_RemainMember_Temp);
+		m_BlueListBox->AddString((_M->m_BlueMemberVect)[i]->name);
+		m_EraseMember.push_back(*(_M->m_BlueMemberVect)[i]);
+		int index = find((_M->m_BlueMemberVect)[i]->name, m_RemainMember_Temp);
 		if (index != -1)
 			m_RemainMember_Temp.erase(m_RemainMember_Temp.begin() + index);
 	}
@@ -109,12 +102,12 @@ BOOL CConfig::OnInitDialog()
 	m_History_LC.InsertColumn(0, _T("名字"), LVCFMT_LEFT, rect.Width() / 2);
 	m_History_LC.InsertColumn(1, _T("金钱"), LVCFMT_LEFT, rect.Width() / 2 - 3);
 
-	for (int i = 0; i < (int)m_AllMemberExterior->size(); ++i)
+	for (int i = 0; i < (int)_M->m_AllMemberVect.size(); ++i)
 	{
 		CString money, flag("");
-		money.Format(_T("%d"), (*m_AllMemberExterior)[i]->money * m_Sum);
-		int row = m_History_LC.InsertItem(i, (*m_AllMemberExterior)[i]->name);
-		if ((*m_AllMemberExterior)[i]->money >= 0)
+		money.Format(_T("%d"), (_M->m_AllMemberVect)[i]->money * _M->m_Sum);
+		int row = m_History_LC.InsertItem(i, (_M->m_AllMemberVect)[i]->name);
+		if ((_M->m_AllMemberVect)[i]->money >= 0)
 			flag = "+";
 		m_History_LC.SetItemText(row, 1, flag + money);
 	}
@@ -252,7 +245,7 @@ void CConfig::OnNMClickList5(NMHDR *pNMHDR, LRESULT *pResult)
 	//得到选中的行
 	int rank = m_History_LC.GetSelectionMark();
 
-	if (m_AllMemberExterior->size() == 0 || rank > m_AllMemberExterior->size() )
+	if ((int)_M->m_AllMemberVect.size() == 0 || rank > (int)_M->m_AllMemberVect.size() )
 		return;
 
 	CString name = m_History_LC.GetItemText(rank, 0);
@@ -260,7 +253,7 @@ void CConfig::OnNMClickList5(NMHDR *pNMHDR, LRESULT *pResult)
 	CString newName = name;
 
 	//创建设置成员信息对话框
-	CEditMember dlg(newName, money, m_Sum);
+	CEditMember dlg(newName, money, _M->m_Sum);
 	dlg.DoModal();
 
 	for (int i = 0; i < (int)m_AllMember_Temp.size(); ++i)
@@ -310,7 +303,7 @@ void CConfig::OnNMClickList5(NMHDR *pNMHDR, LRESULT *pResult)
 
 	//修改金币
 	m_History_LC.SetItemText(rank, 1, money);
-	m_AllMember_Temp[rank].money = _ttoi(money) / m_Sum;
+	m_AllMember_Temp[rank].money = _ttoi(money) / _M->m_Sum;
 }
 
 //保存
@@ -326,20 +319,20 @@ void CConfig::OnBnClickedButton13()
 	//修改外部成员 为新设置的属性
 	m_SaveFlag = true;
 	for (int i = 0; i < (int)m_AllMember_Temp.size(); ++i)
-		*(*m_AllMemberExterior)[i] = m_AllMember_Temp[i];
+		*(_M->m_AllMemberVect)[i] = m_AllMember_Temp[i];
 
-	m_RedMemberExterior->clear();
+	_M->m_RedMemberVect.clear();
 	for (int i = 0; i < (int)m_RedMember_Temp.size(); ++i)
 	{
-		int index = find(m_RedMember_Temp[i].name, m_AllMemberExterior);
-		m_RedMemberExterior->push_back((*m_AllMemberExterior)[index]);
+		int index = find(m_RedMember_Temp[i].name, &_M->m_AllMemberVect);
+		_M->m_RedMemberVect.push_back((_M->m_AllMemberVect)[index]);
 	}
 
-	m_BlueMemberExterior->clear();
+	_M->m_BlueMemberVect.clear();
 	for (int i = 0; i < (int)m_BlueMember_Temp.size(); ++i)
 	{
-		int index = find(m_BlueMember_Temp[i].name, m_AllMemberExterior);
-		m_BlueMemberExterior->push_back((*m_AllMemberExterior)[index]);
+		int index = find(m_BlueMember_Temp[i].name, &_M->m_AllMemberVect);
+		_M->m_BlueMemberVect.push_back((_M->m_AllMemberVect)[index]);
 	}
 
 	SendMessage(WM_CLOSE);

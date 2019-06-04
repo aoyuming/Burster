@@ -120,7 +120,7 @@ BOOL CBursterDlg::OnInitDialog()
 		m_CurListBox->AddString(m_CurMemberVect[i]->name);
 
 	//最佳支付方案
-	PayScheme_g(&m_PaySchemeString, &m_AllMemberVect, m_Sum, m_PaySchemeListBox);
+	PayScheme(&m_PaySchemeString, m_AllMemberVect, m_Sum, m_PaySchemeListBox);
 
 	SetTimer(1, 33, NULL);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE

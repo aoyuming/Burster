@@ -17,6 +17,15 @@ struct stMember
 	}
 };
 
+//信息
+struct stData
+{
+	CString fenZutime, vectoryTmie;
+	vector<stMember> blue;
+	vector<stMember> red;
+	int redLose;
+};
+
 //拷贝成员信息
 void MemberCopy(vector<stMember>& vect1, const vector<stMember*>& vect2);
 void MemberCopy(vector<stMember*>& vect1, const vector<stMember>& vect2);
@@ -28,17 +37,8 @@ stMember* IsMemberInVect(stMember m, vector<stMember*>& ls);
 int IsMemberInVect_index(stMember m, vector<stMember*>& ls);
 
 //最佳支付方案
-void PayScheme_g(vector<CString>* paySchemeString,
-				vector<stMember*>* allMemberVect,
+void PayScheme(vector<CString>* paySchemeString,
+				const vector<stMember*>& allMemberVect,
 				int sum,
 				CListBox* historyListBox);
 
-
-//信息
-struct stData
-{
-	CString fenZutime, vectoryTmie;
-	vector<stMember> blue;
-	vector<stMember> red;
-	int redLose;
-};

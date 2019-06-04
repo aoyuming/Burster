@@ -1,8 +1,6 @@
 #pragma once
 #include "stdafx.h"
 #include "BursterDlg.h"
-#include <algorithm>
-#include "afxdialogex.h"
 #include "Command.h"
 #include "member.h"
 #include "Config.h"
@@ -414,7 +412,7 @@ public:
 		}
 
 		//最佳支付方案
-		PayScheme_g(&_MD->m_PaySchemeString, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+		PayScheme(&_MD->m_PaySchemeString, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 		
 		if (_MD->m_Data.size() > 0)
 		{
@@ -472,7 +470,7 @@ public:
 		_MD->m_AllListBox->ResetContent();
 
 		//最佳支付方案
-		PayScheme_g(&_MD->m_PaySchemeString, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+		PayScheme(&_MD->m_PaySchemeString, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 
 		for (auto it = _MD->m_RedMemberVect.begin(); it != _MD->m_RedMemberVect.end(); ++it)
 			_MD->m_RedListBox->AddString((*it)->name);
@@ -510,7 +508,7 @@ public:
 		_MD->m_AllListBox->ResetContent();
 
 		//最佳支付方案
-		PayScheme_g(&_MD->m_PaySchemeString, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+		PayScheme(&_MD->m_PaySchemeString, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 
 		for (auto it = _MD->m_RedMemberVect.begin(); it != _MD->m_RedMemberVect.end(); ++it)
 			_MD->m_RedListBox->AddString((*it)->name);
@@ -583,7 +581,7 @@ public:
 		}
 
 		//最佳支付方案
-		PayScheme_g(&_MD->m_PaySchemeString, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+		PayScheme(&_MD->m_PaySchemeString, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 
 		//保存信息 用于重做
 		m_AllMemberVect_Redo_Temp.clear();
@@ -613,7 +611,7 @@ public:
 		_MD->m_AllListBox->ResetContent();
 
 		//最佳支付方案
-		PayScheme_g(&_MD->m_PaySchemeString, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+		PayScheme(&_MD->m_PaySchemeString, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 
 		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
@@ -644,7 +642,7 @@ public:
 		_MD->m_AllListBox->ResetContent();
 
 		//最佳支付方案
-		PayScheme_g(&_MD->m_PaySchemeString, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+		PayScheme(&_MD->m_PaySchemeString, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 
 		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
@@ -710,7 +708,7 @@ public:
 
 			//重新计算最佳支付方案
 			vector<CString> pay;
-			PayScheme_g(&pay, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+			PayScheme(&pay, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 		}
 
 		//记录执行命令之后的数据，用于重做
@@ -785,7 +783,7 @@ public:
 
 		//重新计算最佳支付方案
 		vector<CString> pay;
-		PayScheme_g(&pay, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+		PayScheme(&pay, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 	}
 
 	//撤销
@@ -817,6 +815,6 @@ public:
 
 		//重新计算最佳支付方案
 		vector<CString> pay;
-		PayScheme_g(&pay, &_MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+		PayScheme(&pay, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 	}
 };

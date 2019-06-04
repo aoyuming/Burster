@@ -19,11 +19,6 @@ CConfig::CConfig(bool& saveFlag,CBursterDlg* pParent /*=NULL*/)
 	m_SaveFlag(saveFlag),
 	m_MainDlg(pParent)
 {
-	m_AllListBoxExternal = (CListBox*)GetDlgItem(IDC_LIST5);
-	m_RedListBox = (CListBox*)GetDlgItem(IDC_LIST4);
-	m_BlueListBox = (CListBox*)GetDlgItem(IDC_LIST3);
-
-
 	for (int i = 0; i < (int)_M->m_CurMemberVect.size(); ++i)
 		m_CurMember_Temp.push_back(*((_M->m_CurMemberVect)[i]));
 	for (int i = 0; i < (int)_M->m_AllMemberVect.size(); ++i)
@@ -64,6 +59,7 @@ BOOL CConfig::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
+	m_AllListBoxExternal = (CListBox*)GetDlgItem(IDC_LIST5);
 	m_RedListBox = (CListBox*)GetDlgItem(IDC_LIST4);
 	m_BlueListBox = (CListBox*)GetDlgItem(IDC_LIST3);
 

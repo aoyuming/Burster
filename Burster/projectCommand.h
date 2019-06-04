@@ -658,6 +658,10 @@ public:
 ///配置命令
 class ConfigCommand : public Command
 {
+public:
+
+	bool m_Changed;//是否有自定义配置
+
 private:
 
 	CBursterDlg* m_MainDlg;//主窗口类
@@ -680,7 +684,8 @@ public:
 
 	ConfigCommand(CBursterDlg* pDlg)
 		:
-		m_MainDlg(pDlg)
+		m_MainDlg(pDlg),
+		m_Changed(false)
 	{
 		MemberCopy(m_AllMemberVect_Undo_Temp, _MD->m_AllMemberVect);
 		MemberCopy(m_CurMemberVect_Undo_Temp, _MD->m_CurMemberVect);
@@ -696,12 +701,11 @@ public:
 	virtual void execute()
 	{
 		//创建配置窗口
-		bool save = false;
-		CConfig dlg(save, m_MainDlg);
+		CConfig dlg(m_Changed, m_MainDlg);
 		dlg.DoModal();
 
 		//修改
-		if (save)
+		if (m_Changed)
 		{
 			//重新刷新列表框数据
 			SetListBoxData();

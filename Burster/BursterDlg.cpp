@@ -717,20 +717,15 @@ void CBursterDlg::OnTimer(UINT_PTR nIDEvent)
 //设置
 void CBursterDlg::OnBnClickedButton11()
 {
-	if (m_CurMemberVect.size() % 2 != 0)
-	{
-		MessageBox(_T("人员不平均"), _T("提示"), MB_OK);
-		return;
-	}
-
 	//创建配置命令
 	ConfigCommand* com = new ConfigCommand(this);
 
 	//执行命令
 	com->execute();
 
-	//放入命令栈
-	CommandManager::GetInstance()->StoreCommand(com);
+	//有改变配置
+	if (com->m_Changed)
+		CommandManager::GetInstance()->StoreCommand(com);//放入命令栈
 }
 
 //处理消息

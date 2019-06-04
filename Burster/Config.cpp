@@ -62,6 +62,8 @@ BOOL CConfig::OnInitDialog()
 	m_AllListBoxExternal = (CListBox*)GetDlgItem(IDC_LIST5);
 	m_RedListBox = (CListBox*)GetDlgItem(IDC_LIST4);
 	m_BlueListBox = (CListBox*)GetDlgItem(IDC_LIST3);
+	m_SaveBtn = (CButton*)GetDlgItem(IDC_BUTTON13);
+	m_SaveBtn->EnableWindow(FALSE);
 
 	for (int i = 0; i < (int)_M->m_RedMemberVect.size(); ++i)
 	{
@@ -143,6 +145,7 @@ void CConfig::OnBnClickedButton_RedAdd()
 	if (selectIndex == -1)
 		return;
 
+	m_SaveBtn->EnableWindow(TRUE);
 	int index1 = find(selectStr, m_RemainMember_Temp);
 	m_RedListBox->AddString(m_RemainMember_Temp[index1].name);
 	m_EraseMember.push_back(m_RemainMember_Temp[index1]);
@@ -161,6 +164,7 @@ void CConfig::OnBnClickedButtonBlueAdd()
 	if (selectIndex == -1)
 		return;
 
+	m_SaveBtn->EnableWindow(TRUE);
 	int index1 = find(selectStr, m_RemainMember_Temp);
 	m_BlueListBox->AddString(m_RemainMember_Temp[index1].name);
 	m_EraseMember.push_back(m_RemainMember_Temp[index1]);
@@ -179,6 +183,7 @@ void CConfig::OnBnClickedButton2()
 	if (selectIndex == -1)
 		return;
 
+	m_SaveBtn->EnableWindow(TRUE);
 	CString selectStr;
 	m_RedListBox->GetText(selectIndex, selectStr);
 	m_RedListBox->DeleteString(selectIndex);
@@ -201,6 +206,7 @@ void CConfig::OnBnClickedButton5()
 	if (selectIndex == -1)
 		return;
 
+	m_SaveBtn->EnableWindow(TRUE);
 	CString selectStr;
 	m_BlueListBox->GetText(selectIndex, selectStr);
 	m_BlueListBox->DeleteString(selectIndex);
@@ -216,6 +222,9 @@ void CConfig::OnBnClickedButton5()
 //红队清空
 void CConfig::OnBnClickedButton3()
 {
+	if (m_RedMember_Temp.size() != 0)
+		m_SaveBtn->EnableWindow(TRUE);
+
 	for (int i = 0; i < (int)m_RedMember_Temp.size(); ++i)
 		m_RemainMember_Temp.push_back(m_RedMember_Temp[i]);
 	m_RedMember_Temp.clear();
@@ -225,6 +234,9 @@ void CConfig::OnBnClickedButton3()
 //蓝队清空
 void CConfig::OnBnClickedButton12()
 {
+	if (m_BlueMember_Temp.size() != 0)
+		m_SaveBtn->EnableWindow(TRUE);
+
 	for (int i = 0; i < (int)m_BlueMember_Temp.size(); ++i)
 		m_RemainMember_Temp.push_back(m_BlueMember_Temp[i]);
 	m_BlueMember_Temp.clear();
@@ -247,9 +259,10 @@ void CConfig::OnNMClickList5(NMHDR *pNMHDR, LRESULT *pResult)
 	CString name = m_History_LC.GetItemText(rank, 0);
 	CString money = m_History_LC.GetItemText(rank, 1);
 	CString newName = name;
+	CString newMoney = money;
 
 	//创建设置成员信息对话框
-	CEditMember dlg(newName, money, _M->m_Sum);
+	CEditMember dlg(newName, newMoney, _M->m_Sum);
 	dlg.DoModal();
 
 	for (int i = 0; i < (int)m_AllMember_Temp.size(); ++i)
@@ -295,11 +308,16 @@ void CConfig::OnNMClickList5(NMHDR *pNMHDR, LRESULT *pResult)
 		//修改历史记录里面的名字
 		m_History_LC.SetItemText(rank, 0, newName);
 		m_AllMember_Temp[rank].name = newName;
+		m_SaveBtn->EnableWindow(TRUE);
 	}
 
 	//修改金币
-	m_History_LC.SetItemText(rank, 1, money);
-	m_AllMember_Temp[rank].money = _ttoi(money) / _M->m_Sum;
+	if (newMoney != money)
+	{
+		m_History_LC.SetItemText(rank, 1, newMoney);
+		m_AllMember_Temp[rank].money = _ttoi(newMoney) / _M->m_Sum;
+		m_SaveBtn->EnableWindow(TRUE);
+	}
 }
 
 //保存

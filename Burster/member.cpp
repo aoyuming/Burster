@@ -38,8 +38,6 @@ int IsMemberInVect_index(stMember m, vector<stMember*>& ls)
 	return -1;
 }
 
-
-
 //查找是否有人跟他一次就能结算完的成员下标
 static int pairing(const vector<stMember>& vect, int loseMoeny)
 {

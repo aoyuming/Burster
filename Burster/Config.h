@@ -25,6 +25,7 @@ class CConfig : public CDialogEx
 	CListBox* m_AllListBoxExternal;//外部的所有成员listbox
 	CListBox* m_RedListBox;
 	CListBox* m_BlueListBox;
+	CButton* m_SaveBtn;//保存按钮
 
 public:
 	CConfig(bool& saveFlag, CBursterDlg* pParent = NULL);   // 标准构造函数

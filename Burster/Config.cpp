@@ -269,7 +269,7 @@ void CConfig::OnNMClickList5(NMHDR *pNMHDR, LRESULT *pResult)
 	{
 		if (newName == m_AllMember_Temp[i].name && i != rank)
 		{
-			MessageBox(_T("已存在名字"), _T("提示"), MB_OK);
+			MessageBox(_T("已存在名字"), _T("提示"), MB_OK | MB_ICONSTOP);
 			OnNMClickList5(pNMHDR, pResult);
 			return;
 		}
@@ -326,7 +326,7 @@ void CConfig::OnBnClickedButton13()
 	// TODO: 在此添加控件通知处理程序代码
 	if (m_RedMember_Temp.size() != m_BlueMember_Temp.size())
 	{
-		MessageBox(_T("人员不平均"), _T("提示"), MB_OK);
+		MessageBox(_T("人员不平均"), _T("提示"), MB_OK | MB_ICONSTOP);
 		return;
 	}
 

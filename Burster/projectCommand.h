@@ -86,7 +86,7 @@ public:
 			}
 			else
 			{
-				MessageBox(AfxGetApp()->m_pMainWnd->m_hWnd, _T("重复添加"), _T("提示"), MB_OK);
+				MessageBox(AfxGetApp()->m_pMainWnd->m_hWnd, _T("   重复添加   "), _T("提示"), MB_OK | MB_ICONSTOP);
 			}
 			delete m;
 		}

@@ -88,7 +88,7 @@ BOOL CBursterDlg::OnInitDialog()
 	m_Sum = 100;
 	m_SumEdit = (CEdit*)GetDlgItem(IDC_EDIT2);
 	m_SumEdit->SetWindowText(CString(_TEXT("100")));
-	::SetWindowText(AfxGetMainWnd()->m_hWnd, _TEXT("分组器 - v1.0.0.0  -  斗鱼王大枪制作"));
+	::SetWindowText(AfxGetMainWnd()->m_hWnd, _TEXT("分组器 - v1.0.0.1  -  斗鱼王大枪制作"));
 
 	LoadConfiguration();//加载配置文件
 	m_CurListBox = (CListBox*)GetDlgItem(IDC_LIST2);
@@ -417,7 +417,7 @@ void CBursterDlg::OnBnClickedButton2_Delete()
 void CBursterDlg::OnBnClickedButton3_Clear()
 {
 	//提示
-	if (MessageBox(_TEXT("确定清空吗？  此操作不可撤回！"), _TEXT("提示"), MB_YESNO) == IDNO)
+	if (MessageBox(_TEXT("确定清空吗？  此操作不可撤回！"), _TEXT("提示"), MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
 		return;
 
 	//列表框
@@ -586,7 +586,7 @@ void CBursterDlg::Save(const char* fn, const char* rb)
 	path = path.Left(pos);
 
 	CString s = "以保存在" + path;
-	MessageBox(_TEXT(s.GetString()), _TEXT("提示"), MB_OK);
+	MessageBox(_TEXT(s.GetString()), _TEXT("提示"), MB_OK | MB_ICONASTERISK);
 }
 
 //分组
@@ -595,17 +595,17 @@ void CBursterDlg::OnBnClickedButton4_Separate()
 	// TODO: 在此添加控件通知处理程序代码
 	if (m_CurMemberVect.size() % 2 != 0 || m_CurMemberVect.size() < 2)
 	{
-		MessageBox(_TEXT("人数不平均"), _TEXT("提示"), MB_OK);
+		MessageBox(_TEXT("人数不平均"), _TEXT("提示"), MB_OK | MB_ICONASTERISK);
 		return;
 	}
 
 	if (m_RedMemberVect.size() > 0 || m_BlueMemberVect.size() > 0)
 	{
-		if (MessageBox(_TEXT("是否重新分组"), _TEXT("提示"), MB_YESNO) == IDNO)
+		if (MessageBox(_TEXT("是否重新分组"), _TEXT("提示"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 			return;
 	}
 
-	MessageBox(_TEXT("分组成功"), _TEXT("提示"), MB_OK);
+	MessageBox(_TEXT("分组成功"), _TEXT("提示"), MB_OK | MB_ICONASTERISK);
 
 	//创建分组命令
 	GroupingCommand* com = new GroupingCommand(this);
@@ -649,7 +649,7 @@ void CBursterDlg::OnClose()
 void CBursterDlg::OnBnClickedButton5_Blue()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	if (MessageBox(_TEXT("蓝队胜利?"), _TEXT("提示"), MB_YESNO) == IDNO)
+	if (MessageBox(_TEXT("蓝队胜利?"), _TEXT("提示"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 		return;
 
 	//创建胜利命令
@@ -666,7 +666,7 @@ void CBursterDlg::OnBnClickedButton5_Blue()
 void CBursterDlg::OnBnClickedButton7_Red()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	if (MessageBox(_TEXT("红队胜利?"), _TEXT("提示"), MB_YESNO) == IDNO)
+	if (MessageBox(_TEXT("红队胜利?"), _TEXT("提示"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 		return;
 
 	//创建胜利命令

@@ -383,11 +383,13 @@ void CBursterDlg::OnBnClickedButton8_Add()
 		return;
 
 	//创建添加成员命令
-	AddCommand* add = new AddCommand(name, this);
+	AddCommand* com = new AddCommand(name, this);
 
-	//执行命令
-	add->execute();
-	CommandManager::GetInstance()->StoreCommand(add);
+	//执行命令 返回成功就放入命令管理器里面 否则删除自己
+	if (com->execute())
+		CommandManager::GetInstance()->StoreCommand(com);
+	else
+		delete com;
 
 	//递归添加
 	OnBnClickedButton8_Add();
@@ -408,9 +410,11 @@ void CBursterDlg::OnBnClickedButton2_Delete()
 	//创建添加成员命令
 	EraseCommand* com = new EraseCommand(index, this);
 
-	//执行命令
-	com->execute();
-	CommandManager::GetInstance()->StoreCommand(com);
+	//执行命令 返回成功就放入命令管理器里面 否则删除自己
+	if (com->execute())
+		CommandManager::GetInstance()->StoreCommand(com);
+	else
+		delete com;
 }
 
 //清空
@@ -595,7 +599,7 @@ void CBursterDlg::OnBnClickedButton4_Separate()
 	// TODO: 在此添加控件通知处理程序代码
 	if (m_CurMemberVect.size() % 2 != 0 || m_CurMemberVect.size() < 2)
 	{
-		MessageBox(_TEXT("人数不平均"), _TEXT("提示"), MB_OK | MB_ICONASTERISK);
+		MessageBox(_TEXT("人数不平均"), _TEXT("提示"), MB_OK | MB_ICONERROR);
 		return;
 	}
 
@@ -610,11 +614,11 @@ void CBursterDlg::OnBnClickedButton4_Separate()
 	//创建分组命令
 	GroupingCommand* com = new GroupingCommand(this);
 
-	//执行
-	com->execute();
-
-	//放入命令栈
-	CommandManager::GetInstance()->StoreCommand(com);
+	//执行命令 返回成功就放入命令管理器里面 否则删除自己
+	if (com->execute())
+		CommandManager::GetInstance()->StoreCommand(com);
+	else
+		delete com;
 }
 
 //改变金钱
@@ -623,11 +627,11 @@ void CBursterDlg::OnBnClickedButton6_Change()
 	//创建改变金钱命令
 	ChangedMoneyCommand* com = new ChangedMoneyCommand(this);
 
-	//执行
-	com->execute();
-
-	//放入命令栈
-	CommandManager::GetInstance()->StoreCommand(com);
+	//执行命令 返回成功就放入命令管理器里面 否则删除自己
+	if (com->execute())
+		CommandManager::GetInstance()->StoreCommand(com);
+	else
+		delete com;
 }
 
 //退出
@@ -655,11 +659,11 @@ void CBursterDlg::OnBnClickedButton5_Blue()
 	//创建胜利命令
 	WinCommand* com = new WinCommand(false, this);
 
-	//执行命令
-	com->execute();
-
-	//放入命令栈
-	CommandManager::GetInstance()->StoreCommand(com);
+	//执行命令 返回成功就放入命令管理器里面 否则删除自己
+	if (com->execute())
+		CommandManager::GetInstance()->StoreCommand(com);
+	else
+		delete com;
 }
 
 //红队胜利
@@ -672,11 +676,11 @@ void CBursterDlg::OnBnClickedButton7_Red()
 	//创建胜利命令
 	WinCommand* com = new WinCommand(true, this);
 
-	//执行命令
-	com->execute();
-
-	//放入命令栈
-	CommandManager::GetInstance()->StoreCommand(com);
+	//执行命令 返回成功就放入命令管理器里面 否则删除自己
+	if (com->execute())
+		CommandManager::GetInstance()->StoreCommand(com);
+	else
+		delete com;
 }
 
 //撤销
@@ -720,12 +724,11 @@ void CBursterDlg::OnBnClickedButton11()
 	//创建配置命令
 	ConfigCommand* com = new ConfigCommand(this);
 
-	//执行命令
-	com->execute();
-
-	//有改变配置
-	if (com->m_Changed)
-		CommandManager::GetInstance()->StoreCommand(com);//放入命令栈
+	//执行命令 返回成功就放入命令管理器里面 否则删除自己
+	if (com->execute())
+		CommandManager::GetInstance()->StoreCommand(com);
+	else
+		delete com;
 }
 
 //处理消息

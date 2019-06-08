@@ -45,7 +45,7 @@ public:
 	}
 
 	//执行命令
-	virtual void execute()
+	virtual bool execute()
 	{
 		// TODO: 在此添加控件通知处理程序代码
 		stMember* m = new stMember;
@@ -55,7 +55,7 @@ public:
 		if (m->name == _TEXT(""))
 		{
 			delete m;
-			return;
+			return false;
 		}
 
 		//判断当前成员是否在全部玩家列表中
@@ -87,6 +87,8 @@ public:
 			else
 			{
 				MessageBox(AfxGetApp()->m_pMainWnd->m_hWnd, _T("   重复添加   "), _T("提示"), MB_OK | MB_ICONSTOP);
+				delete m;
+				return false;
 			}
 			delete m;
 		}
@@ -95,6 +97,7 @@ public:
 		m_CurMemberVect_Redo_Temp = _MD->m_CurMemberVect;
 		m_DoveMemberVect_Redo_Temp = _MD->m_DoveMemberVect;
 		m_NewMember = m;//记录当前成员
+		return true;
 	}
 
 	//重做
@@ -172,7 +175,7 @@ public:
 	}
 
 	//执行命令
-	virtual void execute()
+	virtual bool execute()
 	{
 		CString s;
 		_MD->m_CurListBox->GetText(m_EraseIndex, s);
@@ -190,6 +193,7 @@ public:
 
 		m_CurMemberVect_Redo_Temp = _MD->m_CurMemberVect;
 		m_DoveMemberVect_Redo_Temp = _MD->m_DoveMemberVect;
+		return true;
 	}
 
 	//重做
@@ -252,7 +256,7 @@ public:
 	}
 
 	//执行命令
-	virtual void execute()
+	virtual bool execute()
 	{
 		//分组
 		vector<stMember*> temp = _MD->m_CurMemberVect;
@@ -304,6 +308,7 @@ public:
 		m_RedMemberVect_Redo_Temp = _MD->m_RedMemberVect;
 		m_BlueMemberVect_Redo_Temp = _MD->m_BlueMemberVect;
 		m_Data_Redo_Temp = _MD->m_Data;
+		return true;
 	}
 
 	//重做
@@ -390,7 +395,7 @@ public:
 	}
 
 	//执行命令
-	virtual void execute()
+	virtual bool execute()
 	{
 		for (int i = 0; i < (int)_MD->m_BlueMemberVect.size(); ++i)
 			_MD->m_BlueMemberVect[i]->money += (m_BlueWin ? -1 : 1);
@@ -448,6 +453,7 @@ public:
 		m_BlueMemberVect_Redo_Temp = _MD->m_BlueMemberVect;
 		m_PaySchemeString_Redo_Temp = _MD->m_PaySchemeString;
 		m_Data_Redo_Temp = _MD->m_Data;
+		return true;
 	}
 
 	//重做
@@ -563,7 +569,7 @@ public:
 	}
 
 	//执行命令
-	virtual void execute()
+	virtual bool execute()
 	{
 		CString s;
 		_MD->m_SumEdit->GetWindowText(s);
@@ -590,6 +596,7 @@ public:
 
 		m_PaySchemeString_Redo_Temp = _MD->m_PaySchemeString;
 		m_TempSum_Redo = _MD->m_Sum;
+		return true;
 	}
 
 	//重做
@@ -658,10 +665,6 @@ public:
 ///配置命令
 class ConfigCommand : public Command
 {
-public:
-
-	bool m_Changed;//是否有自定义配置
-
 private:
 
 	CBursterDlg* m_MainDlg;//主窗口类
@@ -684,8 +687,7 @@ public:
 
 	ConfigCommand(CBursterDlg* pDlg)
 		:
-		m_MainDlg(pDlg),
-		m_Changed(false)
+		m_MainDlg(pDlg)
 	{
 		MemberCopy(m_AllMemberVect_Undo_Temp, _MD->m_AllMemberVect);
 		MemberCopy(m_CurMemberVect_Undo_Temp, _MD->m_CurMemberVect);
@@ -698,14 +700,15 @@ public:
 	}
 
 	//执行命令
-	virtual void execute()
+	virtual bool execute()
 	{
 		//创建配置窗口
-		CConfig dlg(m_Changed, m_MainDlg);
+		bool changed = false;
+		CConfig dlg(changed, m_MainDlg);
 		dlg.DoModal();
 
 		//修改
-		if (m_Changed)
+		if (changed)
 		{
 			//重新刷新列表框数据
 			SetListBoxData();
@@ -713,13 +716,14 @@ public:
 			//重新计算最佳支付方案
 			vector<CString> pay;
 			PayScheme(&pay, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+			//记录执行命令之后的数据，用于重做
+			MemberCopy(m_AllMemberVect_Redo_Temp, _MD->m_AllMemberVect);
+			MemberCopy(m_CurMemberVect_Redo_Temp, _MD->m_CurMemberVect);
+			MemberCopy(m_BlueMemberVect_Redo_Temp, _MD->m_BlueMemberVect);
+			MemberCopy(m_RedMemberVect_Redo_Temp, _MD->m_RedMemberVect);
+			return true;
 		}
-
-		//记录执行命令之后的数据，用于重做
-		MemberCopy(m_AllMemberVect_Redo_Temp, _MD->m_AllMemberVect);
-		MemberCopy(m_CurMemberVect_Redo_Temp, _MD->m_CurMemberVect);
-		MemberCopy(m_BlueMemberVect_Redo_Temp, _MD->m_BlueMemberVect);
-		MemberCopy(m_RedMemberVect_Redo_Temp, _MD->m_RedMemberVect);
+		return false;
 	}
 
 	//设置各个列表框数据

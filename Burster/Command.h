@@ -9,7 +9,7 @@ public:
 	Command() {}
 	virtual ~Command() {}
 
-	virtual void execute() = 0;
+	virtual bool execute() = 0;
 	virtual void redo() = 0;
 	virtual void undo() = 0;
 };

@@ -12,6 +12,7 @@ class CEditMember : public CDialogEx
 
 	EWin m_Select;
 	int m_Sum;//µ××¢
+	CString m_TempMoney;
 	CString& m_sName;
 	CString& m_sMoney;
 

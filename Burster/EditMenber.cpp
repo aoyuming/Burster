@@ -52,6 +52,7 @@ BOOL CEditMember::OnInitDialog()
 	m_Money_Edit.EnableWindow(FALSE);
 	m_Money_Edit.SetWindowText(m_sMoney);
 	m_Name_Edit.SetWindowText(m_sName);
+	m_Money_Edit.GetWindowText(m_TempMoney);
 
 	std::vector<CButton*> vect;
 	vect.push_back((CButton*)GetDlgItem(IDC_RADIO1));
@@ -122,6 +123,7 @@ void CEditMember::OnBnClickedRadio1_lose()
 	//设置下拉框
 	m_ComboBox.EnableWindow(TRUE);
 	m_ComboBox.ResetContent();
+	m_Money_Edit.SetWindowText(m_TempMoney);
 	CString moeny;
 	for (int i = 0; i < 30; ++i)
 	{
@@ -141,6 +143,7 @@ void CEditMember::OnBnClickedRadio2()
 	//设置下拉框
 	m_ComboBox.EnableWindow(TRUE);
 	m_ComboBox.ResetContent();
+	m_Money_Edit.SetWindowText(m_TempMoney);
 	CString moeny;
 	for (int i = 0; i < 30; ++i)
 	{

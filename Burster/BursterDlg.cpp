@@ -88,7 +88,7 @@ BOOL CBursterDlg::OnInitDialog()
 	m_Sum = 100;
 	m_SumEdit = (CEdit*)GetDlgItem(IDC_EDIT2);
 	m_SumEdit->SetWindowText(CString(_TEXT("100")));
-	::SetWindowText(AfxGetMainWnd()->m_hWnd, _TEXT("分组器 - v1.0.0.1  -  斗鱼王大枪制作"));
+	::SetWindowText(AfxGetMainWnd()->m_hWnd, _TEXT("分组器 - v1.0.0.2  -  斗鱼王大枪制作"));
 
 	LoadConfiguration();//加载配置文件
 	m_CurListBox = (CListBox*)GetDlgItem(IDC_LIST2);

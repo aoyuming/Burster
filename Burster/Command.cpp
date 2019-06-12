@@ -2,7 +2,7 @@
 #include "Command.h"
 
 CommandManager* CommandManager::m_Instance = NULL;
-CommandManager* CommandManager::GetInstance()
+CommandManager* CommandManager::getInstance()
 {
 	if (NULL == m_Instance)
 		m_Instance = new CommandManager;

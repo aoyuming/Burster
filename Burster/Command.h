@@ -28,7 +28,7 @@ private:
 
 public:
 
-	static CommandManager* GetInstance();
+	static CommandManager* getInstance();
 	static void release();
 
 	//´æ´¢ÃüÁî

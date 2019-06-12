@@ -88,7 +88,7 @@ BOOL CBursterDlg::OnInitDialog()
 	m_Sum = 100;
 	m_SumEdit = (CEdit*)GetDlgItem(IDC_EDIT2);
 	m_SumEdit->SetWindowText(CString(_TEXT("100")));
-	::SetWindowText(AfxGetMainWnd()->m_hWnd, _TEXT("分组器 - v1.0.0.2  -  斗鱼王大枪制作"));
+	::SetWindowText(AfxGetMainWnd()->m_hWnd, _TEXT("分组器 - v1.0.1.0  -  斗鱼王大枪制作"));
 
 	LoadConfiguration();//加载配置文件
 	m_CurListBox = (CListBox*)GetDlgItem(IDC_LIST2);
@@ -387,7 +387,7 @@ void CBursterDlg::OnBnClickedButton8_Add()
 
 	//执行命令 返回成功就放入命令管理器里面 否则删除自己
 	if (com->execute())
-		CommandManager::GetInstance()->StoreCommand(com);
+		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 
@@ -412,7 +412,7 @@ void CBursterDlg::OnBnClickedButton2_Delete()
 
 	//执行命令 返回成功就放入命令管理器里面 否则删除自己
 	if (com->execute())
-		CommandManager::GetInstance()->StoreCommand(com);
+		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 }
@@ -450,7 +450,7 @@ void CBursterDlg::OnBnClickedButton3_Clear()
 	m_DoveMemberVect.clear();
 
 	//释放
-	CommandManager::GetInstance()->release();
+	CommandManager::getInstance()->release();
 }
 
 //保存
@@ -616,7 +616,7 @@ void CBursterDlg::OnBnClickedButton4_Separate()
 
 	//执行命令 返回成功就放入命令管理器里面 否则删除自己
 	if (com->execute())
-		CommandManager::GetInstance()->StoreCommand(com);
+		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 }
@@ -629,7 +629,7 @@ void CBursterDlg::OnBnClickedButton6_Change()
 
 	//执行命令 返回成功就放入命令管理器里面 否则删除自己
 	if (com->execute())
-		CommandManager::GetInstance()->StoreCommand(com);
+		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 }
@@ -644,7 +644,7 @@ void CBursterDlg::OnClose()
 		delete m_AllMemberVect[i];
 
 	//释放命令缓存
-	CommandManager::GetInstance()->release();
+	CommandManager::getInstance()->release();
 
 	CDialogEx::OnClose();
 }
@@ -661,7 +661,7 @@ void CBursterDlg::OnBnClickedButton5_Blue()
 
 	//执行命令 返回成功就放入命令管理器里面 否则删除自己
 	if (com->execute())
-		CommandManager::GetInstance()->StoreCommand(com);
+		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 }
@@ -678,7 +678,7 @@ void CBursterDlg::OnBnClickedButton7_Red()
 
 	//执行命令 返回成功就放入命令管理器里面 否则删除自己
 	if (com->execute())
-		CommandManager::GetInstance()->StoreCommand(com);
+		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 }
@@ -686,13 +686,13 @@ void CBursterDlg::OnBnClickedButton7_Red()
 //撤销
 void CBursterDlg::OnBnClickedButton9()
 {
-	CommandManager::GetInstance()->undo();
+	CommandManager::getInstance()->undo();
 }
 
 //重做
 void CBursterDlg::OnBnClickedButton10()
 {
-	CommandManager::GetInstance()->redo();
+	CommandManager::getInstance()->redo();
 }
 
 //计时器消息
@@ -703,8 +703,8 @@ void CBursterDlg::OnTimer(UINT_PTR nIDEvent)
 	{
 		CButton* undo = (CButton*)GetDlgItem(IDC_BUTTON9);
 		CButton* redo = (CButton*)GetDlgItem(IDC_BUTTON10);
-		int RedoSize = CommandManager::GetInstance()->GetRedoSize();
-		int UndoSize = CommandManager::GetInstance()->GetUndoSize();
+		int RedoSize = CommandManager::getInstance()->GetRedoSize();
+		int UndoSize = CommandManager::getInstance()->GetUndoSize();
 		undo->EnableWindow(UndoSize > 0 ? TRUE : FALSE);
 		redo->EnableWindow(RedoSize > 0 ? TRUE : FALSE);
 
@@ -726,7 +726,7 @@ void CBursterDlg::OnBnClickedButton11()
 
 	//执行命令 返回成功就放入命令管理器里面 否则删除自己
 	if (com->execute())
-		CommandManager::GetInstance()->StoreCommand(com);
+		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 }
@@ -745,10 +745,10 @@ BOOL CBursterDlg::PreTranslateMessage(MSG* pMsg)
 
 		// do ctrl+Z
 		if (pMsg->wParam == 'Z')
-			CommandManager::GetInstance()->undo();
+			CommandManager::getInstance()->undo();
 		// do ctrl+Y
 		else if (pMsg->wParam == 'Y')
-			CommandManager::GetInstance()->redo();
+			CommandManager::getInstance()->redo();
 
 	} while (FALSE);
 

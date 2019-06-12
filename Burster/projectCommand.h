@@ -714,8 +714,7 @@ public:
 			SetListBoxData();
 
 			//重新计算最佳支付方案
-			vector<CString> pay;
-			PayScheme(&pay, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+			PayScheme(&_MD->m_PaySchemeString, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 			//记录执行命令之后的数据，用于重做
 			MemberCopy(m_AllMemberVect_Redo_Temp, _MD->m_AllMemberVect);
 			MemberCopy(m_CurMemberVect_Redo_Temp, _MD->m_CurMemberVect);
@@ -790,8 +789,7 @@ public:
 		SetListBoxData();
 
 		//重新计算最佳支付方案
-		vector<CString> pay;
-		PayScheme(&pay, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+		PayScheme(&_MD->m_PaySchemeString, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 	}
 
 	//撤销
@@ -822,7 +820,6 @@ public:
 		SetListBoxData();
 
 		//重新计算最佳支付方案
-		vector<CString> pay;
-		PayScheme(&pay, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
+		PayScheme(&_MD->m_PaySchemeString, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 	}
 };

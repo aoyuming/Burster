@@ -465,17 +465,6 @@ void CBursterDlg::Save(const char* fn, const char* rb)
 	if (m_Data.size() == 0)
 		return;
 
-	if (m_RedMemberVect.size() > 0 || m_BlueMemberVect.size() > 0)
-	{
-		m_Data[m_Data.size() - 1].red.clear();
-		m_Data[m_Data.size() - 1].blue.clear();
-		for (int i = 0; i < (int)m_RedMemberVect.size(); ++i)
-			m_Data[m_Data.size() - 1].red.push_back(*m_RedMemberVect[i]);
-
-		for (int i = 0; i < (int)m_BlueMemberVect.size(); ++i)
-			m_Data[m_Data.size() - 1].blue.push_back(*m_BlueMemberVect[i]);
-	}
-
 	FILE* pf = 0;
 	char buf[64];
 	fopen_s(&pf, fn, rb);

@@ -301,6 +301,12 @@ public:
 		stData data;
 		data.fenZutime = buf;
 		data.redLose = 2;
+		for (int i = 0; i < (int)_MD->m_RedMemberVect.size(); ++i)
+			data.red.push_back(*_MD->m_RedMemberVect[i]);
+
+		for (int i = 0; i < (int)_MD->m_BlueMemberVect.size(); ++i)
+			data.blue.push_back(*_MD->m_BlueMemberVect[i]);
+
 		_MD->m_Data.push_back(data);
 
 		//记录当前信息
@@ -433,12 +439,14 @@ public:
 			sprintf_s(buf, "%d年%d月%d日%d时%d分%d秒", m_nYear, m_nMonth, m_nDay, m_nHour, m_nMinute, m_nSecond);
 			_MD->m_Data[_MD->m_Data.size() - 1].vectoryTmie = buf;
 			_MD->m_Data[_MD->m_Data.size() - 1].redLose = 1;
+			_MD->m_Data[_MD->m_Data.size() - 1].red.clear();
+			_MD->m_Data[_MD->m_Data.size() - 1].blue.clear();
 
 			for (int i = 0; i < (int)_MD->m_RedMemberVect.size(); ++i)
-				(_MD->m_Data)[_MD->m_Data.size() - 1].red.push_back(*_MD->m_RedMemberVect[i]);
+				_MD->m_Data[_MD->m_Data.size() - 1].red.push_back(*_MD->m_RedMemberVect[i]);
 
 			for (int i = 0; i < (int)_MD->m_BlueMemberVect.size(); ++i)
-				(_MD->m_Data)[_MD->m_Data.size() - 1].blue.push_back(*_MD->m_BlueMemberVect[i]);
+				_MD->m_Data[_MD->m_Data.size() - 1].blue.push_back(*_MD->m_BlueMemberVect[i]);
 		}
 
 		_MD->m_BlueMemberVect.clear();

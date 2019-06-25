@@ -79,7 +79,6 @@ void CommandManager::redo()
 	m_RedoStack.pop();
 }
 
-
 //获取撤销命名个数
 int CommandManager::GetUndoSize()
 {
@@ -91,3 +90,49 @@ int CommandManager::GetRedoSize()
 {
 	return m_RedoStack.size();
 }
+
+
+ComplexCommand::ComplexCommand(int count, ...) 
+{
+	va_list args;
+	va_start(args, count);
+	for (int i = 0; i < count; ++i)
+	{
+		Command* com = va_arg(args, Command*);
+		m_ComVector.push_back(com);
+	}
+	va_end(args);
+}
+
+ComplexCommand::~ComplexCommand() 
+{
+	for (int i = 0; i < (int)m_ComVector.size(); ++i)
+		delete m_ComVector[i];
+	m_ComVector.clear();
+}
+
+bool ComplexCommand::execute() 
+{
+	for (int i = 0; i < (int)m_ComVector.size(); ++i)
+		m_ComVector[i]->execute();
+	return true;
+}
+
+void ComplexCommand::redo() 
+{
+	for (int i = 0; i < (int)m_ComVector.size(); ++i)
+		m_ComVector[i]->undo();
+}
+
+void ComplexCommand::undo() 
+{
+	for (int i = (int)m_ComVector.size() - 1; i >= 0; --i)
+		m_ComVector[i]->redo();
+}
+
+//添加命令
+void ComplexCommand::addCommand(Command* com) 
+{
+	m_ComVector.push_back(com);
+}
+

@@ -1,8 +1,10 @@
 #pragma once
 #include "stdafx.h"
 #include <stack>
+#include <vector>
+using namespace std;
 
-
+//命令接口
 class Command
 {
 public:
@@ -14,7 +16,24 @@ public:
 	virtual void undo() = 0;
 };
 
+//复合命令
+class ComplexCommand : public Command
+{
+private:
+	//命令队列
+	vector<Command*> m_ComVector;
+public:
+	ComplexCommand(int count, ...);
+	virtual ~ComplexCommand();
+	virtual bool execute();
+	virtual void redo();
+	virtual void undo();
 
+	//添加命令
+	void addCommand(Command* com);
+};
+
+//命令管理器
 class CommandManager
 {
 private:

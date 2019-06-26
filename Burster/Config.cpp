@@ -324,11 +324,11 @@ void CConfig::OnNMClickList5(NMHDR *pNMHDR, LRESULT *pResult)
 void CConfig::OnBnClickedButton13()
 {
 	// TODO: 在此添加控件通知处理程序代码
-	if (m_RedMember_Temp.size() != m_BlueMember_Temp.size())
+	/*if (m_RedMember_Temp.size() != m_BlueMember_Temp.size())
 	{
 		MessageBox(_T("人员不平均"), _T("提示"), MB_OK | MB_ICONSTOP);
 		return;
-	}
+	}*/
 
 	//修改外部成员 为新设置的属性
 	m_SaveFlag = true;

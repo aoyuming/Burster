@@ -578,8 +578,8 @@ void CBursterDlg::Save(const char* fn, const char* rb)
 	int pos = path.ReverseFind('\\');
 	path = path.Left(pos);
 
-	CString s = "以保存在" + path;
-	MessageBox(_TEXT(s.GetString()), _TEXT("提示"), MB_OK | MB_ICONASTERISK);
+	//CString s = "配置信息以保存在" + path;
+	//MessageBox(_TEXT(s.GetString()), _TEXT("提示"), MB_OK | MB_ICONASTERISK);
 }
 
 //分组
@@ -692,6 +692,7 @@ void CBursterDlg::OnTimer(UINT_PTR nIDEvent)
 	{
 		CButton* undo = (CButton*)GetDlgItem(IDC_BUTTON9);
 		CButton* redo = (CButton*)GetDlgItem(IDC_BUTTON10);
+
 		int RedoSize = CommandManager::getInstance()->GetRedoSize();
 		int UndoSize = CommandManager::getInstance()->GetUndoSize();
 		undo->EnableWindow(UndoSize > 0 ? TRUE : FALSE);
@@ -702,6 +703,12 @@ void CBursterDlg::OnTimer(UINT_PTR nIDEvent)
 		bool enable = (m_RedListBox->GetCount() == 0 && m_BlueListBox->GetCount() == 0);
 		//btn1->EnableWindow(enable);
 		btn2->EnableWindow(enable);
+
+		CButton* red = (CButton*)GetDlgItem(IDC_BUTTON7);
+		CButton* blue = (CButton*)GetDlgItem(IDC_BUTTON5);
+
+		red->EnableWindow(m_RedMemberVect.size() > 0);
+		blue->EnableWindow(m_BlueMemberVect.size() > 0);
 	}
 
 	CDialogEx::OnTimer(nIDEvent);

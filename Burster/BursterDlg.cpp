@@ -10,15 +10,16 @@
 #include "Config.h"
 
 
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
 
+const CString FLAG_PATH = _T("C:\\Program Files (x86)\\burster\\flag");
+const CString REMOTE_VERSION_URL = _T("http://129.226.48.122/burster/version.txt");
+const CString LIVE_UPDATE_NAME = _T("liveUpdate.exe");
+const CString TEMP_PATH = _T("c:\\temp");
 
 // CBursterDlg 对话框
-
-
 
 CBursterDlg::CBursterDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CBursterDlg::IDD, pParent)
@@ -57,7 +58,21 @@ BOOL CBursterDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	// 将“关于...”菜单项添加到系统菜单中。
+	::CreateMutex(NULL, TRUE, "分组器");//字符串里面的内容可以随便改.他只是一个名字
+	if (GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		AfxMessageBox("你已经打开了该程序");
+		exit(0);
+		return false;
+	}
+
+	//写入文件
+	CreateDirectory(_T("C:\\Program Files (x86)\\burster\\"), NULL);
+	if (m_FlagFile.Open(FLAG_PATH, CFile::modeWrite | CFile::modeCreate))
+	{
+		m_FlagFile.Write("flag", sizeof("flag"));
+		m_FlagFile.Close();
+	}
 
 	// IDM_ABOUTBOX 必须在系统命令范围内。
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
@@ -84,11 +99,18 @@ BOOL CBursterDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
+	m_Version[0] = 1;
+	m_Version[1] = 2;
+	m_Version[2] = 1;
 
+	CString ver;
+	ver.Format("%d.%d.%d", m_Version[0], m_Version[1], m_Version[2]);
 	m_Sum = 100;
 	m_SumEdit = (CEdit*)GetDlgItem(IDC_EDIT2);
 	m_SumEdit->SetWindowText(CString(_TEXT("100")));
-	::SetWindowText(AfxGetMainWnd()->m_hWnd, _TEXT("分组器 - v1.0.1.0  -  斗鱼王大枪制作"));
+	CString title = _TEXT("分组器 - v");
+	title += ver + _T("  斗鱼王大枪制作");
+	SetWindowText(title);
 
 	LoadConfiguration();//加载配置文件
 	m_CurListBox = (CListBox*)GetDlgItem(IDC_LIST2);
@@ -123,7 +145,78 @@ BOOL CBursterDlg::OnInitDialog()
 	PayScheme(&m_PaySchemeString, m_AllMemberVect, m_Sum, m_PaySchemeListBox);
 
 	SetTimer(1, 33, NULL);
+	SetTimer(2, 2000, NULL);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
+}
+
+//比较版本信息 
+bool CBursterDlg::compareVersion(int v1, int v2, int v3)
+{
+	if (v1 < m_Version[0])
+		return false;
+	if (v2 < m_Version[1])
+		return false;
+	if (v3 <= m_Version[2])
+		return false;
+	return true;
+}
+
+//检查更新
+bool CBursterDlg::inspectUpdate()
+{
+	CString path;
+	GetModuleFileName(NULL, path.GetBufferSetLength(MAX_PATH + 1), MAX_PATH);
+	path.ReleaseBuffer();
+	int pos = path.ReverseFind('\\');
+	path = path.Left(pos);
+
+	//更新文件是否存在
+	if (!PathFileExists(path + _T('\\') + LIVE_UPDATE_NAME))
+		return false;
+
+	CString szUrl = REMOTE_VERSION_URL, rdStr;
+	rdStr.Format(_T("?abc=%d"), time(NULL)); // 生成随机URL
+	szUrl += rdStr;
+	CString localPath = TEMP_PATH;
+	HRESULT  ret = URLDownloadToFile(NULL, szUrl, localPath, 0, NULL);
+
+	if (S_OK != ret)//下载出错
+		return false;
+
+	FILE* pf = NULL;
+	fopen_s(&pf, localPath, "rb");
+
+	if (NULL == pf)
+		return false;
+
+	//版本号
+	int v1, v2, v3;
+	fscanf_s(pf, "版本%d.%d.%d", &v1, &v2, &v3);
+	fclose(pf);
+
+	//判断是否更新
+	if (!compareVersion(v1, v2, v3))
+		return false;
+
+	CFile file;
+	if (file.Open(localPath, CFile::modeRead))
+	{
+		int length = file.GetLength();
+		char* buf = new char[length + 1];
+		file.Read(buf, length + 1);
+		file.Close();
+		buf[length] = 0;
+		MessageBox(buf, _T("发现更新"), MB_OK);
+		delete []buf;
+
+		//打开更新文件
+		WinExec(LIVE_UPDATE_NAME, WM_SHOWWINDOW);
+
+		//关闭自己
+		SendMessage(WM_CLOSE);
+	}
+
+	return true;
 }
 
 // 如果向对话框添加最小化按钮，则需要下面的代码
@@ -635,6 +728,14 @@ void CBursterDlg::OnClose()
 	//释放命令缓存
 	CommandManager::getInstance()->release();
 
+	//删除临时文件
+	if (PathFileExists(TEMP_PATH))
+		CFile::Remove(TEMP_PATH);
+
+	//删除临时文件
+	if (PathFileExists(FLAG_PATH))
+		CFile::Remove(FLAG_PATH);
+
 	CDialogEx::OnClose();
 }
 
@@ -709,6 +810,14 @@ void CBursterDlg::OnTimer(UINT_PTR nIDEvent)
 
 		red->EnableWindow(m_RedMemberVect.size() > 0);
 		blue->EnableWindow(m_BlueMemberVect.size() > 0);
+	}
+	else if (nIDEvent == 2)//检查更新
+	{
+		//清除当前计时器
+		KillTimer(2);
+
+		//检查更新
+		inspectUpdate();
 	}
 
 	CDialogEx::OnTimer(nIDEvent);

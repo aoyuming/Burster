@@ -36,6 +36,9 @@ public:
 	friend class CConfig;
 
 private:
+
+	//版本号
+	int m_Version[3];
 	
 	//赌金
 	int m_Sum;
@@ -47,6 +50,8 @@ private:
 	CListBox* m_PaySchemeListBox;//最佳支付方案
 
 	CEdit* m_SumEdit;
+
+	CFile m_FlagFile;
 
 	//当前成员列表
 	vector<stMember*> m_CurMemberVect;
@@ -77,6 +82,12 @@ private:
 
 	//加载配置文件
 	bool LoadConfiguration();
+
+	//比较版本信息 
+	bool compareVersion(int v1, int v2, int v3);
+
+	//检查更新
+	bool inspectUpdate();
 
 // 实现
 protected:

@@ -35,6 +35,10 @@ public:
 	friend class ConfigCommand;
 	friend class CConfig;
 
+	CWinThread*	m_pThread;
+	//检查更新
+	bool inspectUpdate();
+
 private:
 
 	//版本号
@@ -84,10 +88,7 @@ private:
 	bool LoadConfiguration();
 
 	//比较版本信息 
-	bool compareVersion(int v1, int v2, int v3);
-
-	//检查更新
-	bool inspectUpdate();
+	int compareVersion(int v1, int v2, int v3);
 
 // 实现
 protected:

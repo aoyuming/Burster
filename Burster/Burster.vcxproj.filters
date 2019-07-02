@@ -54,6 +54,9 @@
     <ClInclude Include="EditMember.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="VersionInfo.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Burster.cpp">
@@ -81,6 +84,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="member.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="VersionInfo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -728,9 +728,8 @@ public:
 			MemberCopy(m_CurMemberVect_Redo_Temp, _MD->m_CurMemberVect);
 			MemberCopy(m_BlueMemberVect_Redo_Temp, _MD->m_BlueMemberVect);
 			MemberCopy(m_RedMemberVect_Redo_Temp, _MD->m_RedMemberVect);
-			return true;
 		}
-		return false;
+		return changed;
 	}
 
 	//设置各个列表框数据

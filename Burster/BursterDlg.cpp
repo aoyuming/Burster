@@ -8,6 +8,7 @@
 #include "afxdialogex.h"
 #include "projectCommand.h"
 #include "Config.h"
+#include "VersionInfo.h"
 
 
 #ifdef _DEBUG
@@ -63,7 +64,7 @@ BOOL CBursterDlg::OnInitDialog()
 	{
 		AfxMessageBox("你已经打开了该程序");
 		exit(0);
-		return false;
+		return FALSE;
 	}
 
 	// IDM_ABOUTBOX 必须在系统命令范围内。
@@ -93,16 +94,14 @@ BOOL CBursterDlg::OnInitDialog()
 
 	m_Version[0] = 1;
 	m_Version[1] = 2;
-	m_Version[2] = 5;
+	m_Version[2] = 8;
 
 	CString ver;
-	ver.Format("%d.%d.%d", m_Version[0], m_Version[1], m_Version[2]);
+	ver.Format("分组器 - v%d.%d.%d  斗鱼王大枪制作", m_Version[0], m_Version[1], m_Version[2]);
 	m_Sum = 100;
 	m_SumEdit = (CEdit*)GetDlgItem(IDC_EDIT2);
 	m_SumEdit->SetWindowText(CString(_TEXT("100")));
-	CString title = _TEXT("分组器 - v");
-	title += ver + _T("  斗鱼王大枪制作");
-	SetWindowText(title);
+	SetWindowText(ver);
 
 	LoadConfiguration();//加载配置文件
 	m_CurListBox = (CListBox*)GetDlgItem(IDC_LIST2);
@@ -142,9 +141,6 @@ BOOL CBursterDlg::OnInitDialog()
 }
 
 //比较版本信息 
-//return < 0 更新
-//return == 0 不用更新
-//return > 0 不用更新
 int CBursterDlg::compareVersion(int v1, int v2, int v3)
 {
 	int version1 = m_Version[0] * 100 + m_Version[1] * 10 + m_Version[2];
@@ -155,26 +151,6 @@ int CBursterDlg::compareVersion(int v1, int v2, int v3)
 //下载远程文件 下载线程
 UINT downRemoteFile(LPVOID lpParam)
 {
-	CString path;
-	GetModuleFileName(NULL, path.GetBufferSetLength(MAX_PATH + 1), MAX_PATH);
-	path.ReleaseBuffer();
-	int pos = path.ReverseFind('\\');
-	path = path.Left(pos);
-
-	//更新程序是否存在
-	if (!PathFileExists(path + _T('\\') + LOCAL_LIVE_UPDATE))
-	{
-		//下载远程更新程序
-		CString szUrl = REMOTE_LIVE_UPDATE, rdStr;
-		rdStr.Format(_T("?abc=%d"), time(NULL)); // 生成随机URL
-		szUrl += rdStr;
-		CString localPath = path + _T('\\') + LOCAL_LIVE_UPDATE;
-		HRESULT ret = URLDownloadToFile(NULL, szUrl, localPath, 0, NULL);
-
-		if (S_OK != ret)//下载出错
-			return -1;
-	}
-
 	//检测更新
 	CBursterDlg* dlg = (CBursterDlg*)(AfxGetApp()->GetMainWnd());
 	dlg->inspectUpdate();
@@ -194,71 +170,64 @@ bool CBursterDlg::inspectUpdate()
 	CString szUrl = REMOTE_VERSION_URL, rdStr;
 	rdStr.Format(_T("?abc=%d"), time(NULL)); // 生成随机URL
 	szUrl += rdStr;
-	CString localPath = TEMP_PATH;
-	HRESULT ret = URLDownloadToFile(NULL, szUrl, localPath, 0, NULL);
+	HRESULT ret = URLDownloadToFile(NULL, szUrl, TEMP_PATH, 0, NULL);
 
 	if (S_OK != ret)//下载出错
-		return false;
+		return FALSE;
 
 	FILE* pf = NULL;
-	fopen_s(&pf, localPath, "rb");
+	fopen_s(&pf, TEMP_PATH, _T("rb"));
 
 	if (NULL == pf)
-		return false;
+		return FALSE;
 
 	//版本号
 	int v1, v2, v3;
-	fscanf_s(pf, "版本%d.%d.%d", &v1, &v2, &v3);
-	fclose(pf);
+	fscanf_s(pf, _T("版本.%d.%d.%d"), &v1, &v2, &v3);
 
 	//判断是否更新
 	if (compareVersion(v1, v2, v3) >= 0)
-		return false;
-
-	CFile file;
-	if (file.Open(localPath, CFile::modeRead))
 	{
-		int length = file.GetLength();
-		char* buf = new char[length + 1];
-		file.Read(buf, length + 1);
-		file.Close();
-		buf[length] = 0;
-		MessageBox(buf, _T("发现更新"), MB_OK);
-		delete []buf;
-
-		////打开更新文件
-		//WinExec(LIVE_UPDATE_NAME, WM_SHOWWINDOW);
-
-		//写入本地信息
-		CString data = _T("远程分组器地址=http://129.226.48.122/burster/Burster.exe");
-		CFile file;
-		if (file.Open(path + _T('\\') + _T("version.txt"), CFile::modeCreate | CFile::modeWrite))
-		{
-			file.Write(data.GetBuffer(), data.GetLength());
-			file.Close();
-		}
-
-		//打开更新程序
-		CString livePath = path + _T('\\') + LOCAL_LIVE_UPDATE;
-		SHELLEXECUTEINFO ShExecInfo;
-
-		ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
-		ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
-		ShExecInfo.hwnd = NULL;
-		ShExecInfo.lpVerb = _T("open");
-		//输入要调用的exe文件路径
-		ShExecInfo.lpFile = livePath;
-		//传入命令行参数数据
-		ShExecInfo.lpParameters = _T("fzq_com"); //若没有命令行参数，可为NULL
-
-		ShExecInfo.lpDirectory = NULL;//这里exe的目录可忽略，写为NULL
-		ShExecInfo.nShow = SW_SHOWDEFAULT;//这里设置为不显示exe界面，若设置为SW_SHOW，则可以显示exe界面
-		ShExecInfo.hInstApp = NULL;
-		ShellExecuteEx(&ShExecInfo);
-
-		//关闭本程序
-		SendMessage(WM_CLOSE);
+		fclose(pf);
+		return FALSE;
 	}
+
+	//获取更新的信息
+	CString allMsg, curMsg;
+	allMsg.Format(_T("最新版本v%d.%d.%d\r\n"), v1, v2, v3);
+	char buf[64];
+	int msgNum = 0;
+	fscanf_s(pf, _T("\r\n信息数量=%d"), &msgNum);
+	for (int i = 0; i < msgNum; ++i)
+	{
+		fscanf_s(pf, _T("\r\n【%d.%d.%d】%s"), &v1, &v2, &v3, buf, 64);
+		if (compareVersion(v1, v2, v3) >= 0)
+			break;
+		curMsg.Format(_T("%d."), i + 1);
+		curMsg += buf;
+		curMsg += _T("\r\n");
+		allMsg += curMsg;
+	}
+
+	fclose(pf);
+
+	//检查更新程序是否存在
+	if (!PathFileExists(path + _T('\\') + LOCAL_LIVE_UPDATE))
+	{
+		//下载远程更新程序
+		CString szUrl = REMOTE_LIVE_UPDATE, rdStr;
+		rdStr.Format(_T("?abc=%d"), time(NULL)); // 生成随机URL
+		szUrl += rdStr;
+		CString localPath = path + _T('\\') + LOCAL_LIVE_UPDATE;
+		HRESULT ret = URLDownloadToFile(NULL, szUrl, localPath, 0, NULL);
+
+		if (S_OK != ret)//下载出错
+			return -1;
+	}
+
+	//打开更新版本对话框
+	CVersionInfo verInfo(allMsg);
+	verInfo.DoModal();
 
 	return true;
 }
@@ -383,7 +352,7 @@ bool CBursterDlg::LoadConfiguration()
 	fopen_s(&pf, "config.txt", "rb");
 
 	if (NULL == pf)
-		return false;
+		return FALSE;
 
 	//全部人数
 	int allNum = 0;
@@ -787,7 +756,7 @@ void CBursterDlg::OnBnClickedButton5_Blue()
 		return;
 
 	//创建胜利命令
-	WinCommand* com = new WinCommand(false, this);
+	WinCommand* com = new WinCommand(FALSE, this);
 
 	//执行命令 返回成功就放入命令管理器里面 否则删除自己
 	if (com->execute())

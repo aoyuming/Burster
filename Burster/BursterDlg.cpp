@@ -93,8 +93,8 @@ BOOL CBursterDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	m_Version[0] = 1;
-	m_Version[1] = 2;
-	m_Version[2] = 8;
+	m_Version[1] = 3;
+	m_Version[2] = 5;
 
 	CString ver;
 	ver.Format("分组器 - v%d.%d.%d  斗鱼王大枪制作", m_Version[0], m_Version[1], m_Version[2]);
@@ -151,9 +151,46 @@ int CBursterDlg::compareVersion(int v1, int v2, int v3)
 //下载远程文件 下载线程
 UINT downRemoteFile(LPVOID lpParam)
 {
-	//检测更新
-	CBursterDlg* dlg = (CBursterDlg*)(AfxGetApp()->GetMainWnd());
-	dlg->inspectUpdate();
+	////检测更新
+	//CBursterDlg* dlg = (CBursterDlg*)(AfxGetApp()->GetMainWnd());
+	//dlg->inspectUpdate();
+
+	CString path;
+	GetModuleFileName(NULL, path.GetBufferSetLength(MAX_PATH + 1), MAX_PATH);
+	path.ReleaseBuffer();
+	int pos = path.ReverseFind('\\');
+	path = path.Left(pos);
+
+	//打开更新程序
+	CString livePath = path + _T('\\') + LOCAL_LIVE_UPDATE;
+
+	//检查更新程序是否存在
+	if (!PathFileExists(path + _T('\\') + LOCAL_LIVE_UPDATE))
+	{
+		//下载远程更新程序
+		CString szUrl = REMOTE_LIVE_UPDATE, rdStr;
+		rdStr.Format(_T("?abc=%d"), time(NULL)); // 生成随机URL
+		szUrl += rdStr;
+		CString localPath = path + _T('\\') + LOCAL_LIVE_UPDATE;
+		HRESULT ret = URLDownloadToFile(NULL, szUrl, localPath, 0, NULL);
+
+		if (S_OK != ret)//下载出错
+			return -1;
+	}
+
+	SHELLEXECUTEINFO ShExecInfo;
+	ShExecInfo.cbSize = sizeof(SHELLEXECUTEINFO);
+	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+	ShExecInfo.hwnd = NULL;
+	ShExecInfo.lpVerb = _T("open");
+	//输入要调用的exe文件路径
+	ShExecInfo.lpFile = livePath;
+	//传入命令行参数数据
+	ShExecInfo.lpParameters = _T("token:fzq_update|className:fzq"); //若没有命令行参数，可为NULL
+	ShExecInfo.lpDirectory = NULL;//这里exe的目录可忽略，写为NULL
+	ShExecInfo.nShow = SW_SHOWDEFAULT;//这里设置为不显示exe界面，若设置为SW_SHOW，则可以显示exe界面
+	ShExecInfo.hInstApp = NULL;
+	ShellExecuteEx(&ShExecInfo);
 
 	return 0;
 }

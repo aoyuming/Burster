@@ -78,7 +78,7 @@ void CVersionInfo::OnBnClickedButton1()
 	//输入要调用的exe文件路径
 	ShExecInfo.lpFile = livePath;
 	//传入命令行参数数据
-	ShExecInfo.lpParameters = _T("fzq_com"); //若没有命令行参数，可为NULL
+	ShExecInfo.lpParameters = _T("fzq_update"); //若没有命令行参数，可为NULL
 	ShExecInfo.lpDirectory = NULL;//这里exe的目录可忽略，写为NULL
 	ShExecInfo.nShow = SW_SHOWDEFAULT;//这里设置为不显示exe界面，若设置为SW_SHOW，则可以显示exe界面
 	ShExecInfo.hInstApp = NULL;

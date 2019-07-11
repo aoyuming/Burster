@@ -20,6 +20,18 @@ const CString LOCAL_LIVE_UPDATE = _T("liveUpdate.exe");
 const CString TEMP_PATH = _T("c:\\temp");
 const CString REMOTE_LIVE_UPDATE = _T("http://129.226.48.122/burster/liveUpdate.exe");
 
+//获取app安装路径
+CString GetAppPath()
+{
+	//本程序安装路径
+	CString appPath;
+	GetModuleFileName(NULL, appPath.GetBufferSetLength(MAX_PATH + 1), MAX_PATH);
+	appPath.ReleaseBuffer();
+	int pos = appPath.ReverseFind('\\');
+	appPath = appPath.Left(pos);
+	return appPath;
+}
+
 // CBursterDlg 对话框
 
 CBursterDlg::CBursterDlg(CWnd* pParent /*=NULL*/)
@@ -93,8 +105,19 @@ BOOL CBursterDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	m_Version[0] = 1;
-	m_Version[1] = 3;
-	m_Version[2] = 5;
+	m_Version[1] = 5;
+	m_Version[2] = 0;
+
+	//加载本地配置文件
+	FILE* pf = NULL;
+	CString appPath = GetAppPath();
+	//MessageBox(appPath);
+	fopen_s(&pf, appPath + _T("\\version.manifest"), "rb");
+	if (pf)
+	{
+		fscanf_s(pf, _T("版本:%d.%d.%d"), &m_Version[0], &m_Version[1], &m_Version[2]);
+		fclose(pf);
+	}
 
 	CString ver;
 	ver.Format("分组器 - v%d.%d.%d  斗鱼王大枪制作", m_Version[0], m_Version[1], m_Version[2]);
@@ -165,7 +188,7 @@ UINT downRemoteFile(LPVOID lpParam)
 	CString livePath = path + _T('\\') + LOCAL_LIVE_UPDATE;
 
 	//检查更新程序是否存在
-	if (!PathFileExists(path + _T('\\') + LOCAL_LIVE_UPDATE))
+	//if (!PathFileExists(path + _T('\\') + LOCAL_LIVE_UPDATE))
 	{
 		//下载远程更新程序
 		CString szUrl = REMOTE_LIVE_UPDATE, rdStr;
@@ -599,14 +622,45 @@ void CBursterDlg::OnBnClickedButton3_Clear()
 //保存
 void CBursterDlg::OnBnClickedButton1_Save()
 {
-	Save("战绩情况.txt", "wb");
+	if (m_Data.size() == 0)
+	{
+		MessageBox(_T("无可保存信息!"));
+		return;
+	}
+
+	char szPath[MAX_PATH];     //存放选择的目录路径 
+	ZeroMemory(szPath, sizeof(szPath));
+	BROWSEINFO bi;
+	bi.hwndOwner = m_hWnd;
+	bi.pidlRoot = NULL;
+	bi.pszDisplayName = szPath;
+	bi.lpszTitle = "请选择需要保存的目录：";
+	bi.ulFlags = 0;
+	bi.lpfn = NULL;
+	bi.lParam = 0;
+	bi.iImage = 0;
+
+	//弹出选择目录对话框
+	LPITEMIDLIST lp = SHBrowseForFolder(&bi);
+	if (lp && SHGetPathFromIDList(lp, szPath))
+	{
+		CString temp;
+		temp = szPath;
+		temp += _T("\\战绩情况.txt");
+
+		if (Save(temp, "wb"))
+		{
+			CString s = "配置信息以保存在" + temp;
+			MessageBox(_TEXT(s.GetString()), _TEXT("提示"), MB_OK | MB_ICONASTERISK);
+		}
+	}
 }
 
 //保存
-void CBursterDlg::Save(const char* fn, const char* rb)
+bool CBursterDlg::Save(const char* fn, const char* rb)
 {
 	if (m_Data.size() == 0)
-		return;
+		return false;
 
 	FILE* pf = 0;
 	char buf[64];
@@ -721,8 +775,7 @@ void CBursterDlg::Save(const char* fn, const char* rb)
 	int pos = path.ReverseFind('\\');
 	path = path.Left(pos);
 
-	//CString s = "配置信息以保存在" + path;
-	//MessageBox(_TEXT(s.GetString()), _TEXT("提示"), MB_OK | MB_ICONASTERISK);
+	return true;
 }
 
 //分组
@@ -770,7 +823,7 @@ void CBursterDlg::OnBnClickedButton6_Change()
 void CBursterDlg::OnClose()
 {
 	SaveConfiguration();
-	Save("战绩情况.txt", "wb");
+	//Save("战绩情况.txt", "wb");
 
 	for (int i = 0; i < (int)m_AllMemberVect.size(); ++i)
 		delete m_AllMemberVect[i];

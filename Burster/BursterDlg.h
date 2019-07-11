@@ -79,7 +79,7 @@ private:
 	vector<stData> m_Data;
 
 	//保存
-	void Save(const char* fn,const char* rb);
+	bool Save(const char* fn,const char* rb);
 
 	//保存配置文件
 	void SaveConfiguration();

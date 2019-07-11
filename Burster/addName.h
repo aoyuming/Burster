@@ -25,4 +25,5 @@ public:
 	afx_msg void OnBnClickedButton2();
 	CEdit* m_NameEdit;
 	CString& m_Name;
+	afx_msg void OnEnUpdateEdit1();
 };

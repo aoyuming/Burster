@@ -106,7 +106,7 @@ BOOL CBursterDlg::OnInitDialog()
 
 	m_Version[0] = 1;
 	m_Version[1] = 5;
-	m_Version[2] = 8;
+	m_Version[2] = 9;
 
 	//加载本地配置文件
 	FILE* pf = NULL;
@@ -834,6 +834,15 @@ void CBursterDlg::OnClose()
 	//删除临时文件
 	if (PathFileExists(TEMP_PATH))
 		CFile::Remove(TEMP_PATH);
+
+	//检测更新程序是否在运行
+	//CWnd* liveUpdate = FindWindow(_T("myLiveUpdate"), NULL);
+	CWnd* liveUpdate = FindWindow(NULL, "发现更新");
+
+	//关闭
+	if (liveUpdate)
+		liveUpdate->SendMessage(WM_CLOSE);
+
 
 	CDialogEx::OnClose();
 }

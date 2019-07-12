@@ -39,7 +39,6 @@ CBursterApp theApp;
 
 BOOL CBursterApp::InitInstance()
 {
-
 	WNDCLASS wc;
 	::GetClassInfo(::AfxGetInstanceHandle(), _T("#32770"), &wc);
 

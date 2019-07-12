@@ -18,7 +18,7 @@
 const CString REMOTE_VERSION_URL = _T("http://129.226.48.122/burster/version.txt");
 const CString LOCAL_LIVE_UPDATE = _T("liveUpdate.exe");
 const CString TEMP_PATH = _T("c:\\temp");
-const CString REMOTE_LIVE_UPDATE = _T("http://129.226.48.122/burster/liveUpdate.exe");
+const CString REMOTE_LIVE_UPDATE = _T("https://burster-update.oss-cn-beijing.aliyuncs.com/liveUpdate/liveUpdate.exe");
 
 //获取app安装路径
 CString GetAppPath()
@@ -106,7 +106,7 @@ BOOL CBursterDlg::OnInitDialog()
 
 	m_Version[0] = 1;
 	m_Version[1] = 5;
-	m_Version[2] = 0;
+	m_Version[2] = 8;
 
 	//加载本地配置文件
 	FILE* pf = NULL;
@@ -120,7 +120,7 @@ BOOL CBursterDlg::OnInitDialog()
 	}
 
 	CString ver;
-	ver.Format("分组器 - v%d.%d.%d  斗鱼王大枪制作", m_Version[0], m_Version[1], m_Version[2]);
+	ver.Format("分组器 - v%d.%d.%d", m_Version[0], m_Version[1], m_Version[2]);
 	m_Sum = 100;
 	m_SumEdit = (CEdit*)GetDlgItem(IDC_EDIT2);
 	m_SumEdit->SetWindowText(CString(_TEXT("100")));

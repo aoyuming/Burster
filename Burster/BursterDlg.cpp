@@ -105,8 +105,8 @@ BOOL CBursterDlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
 	m_Version[0] = 1;
-	m_Version[1] = 5;
-	m_Version[2] = 9;
+	m_Version[1] = 6;
+	m_Version[2] = 0;
 
 	//加载本地配置文件
 	FILE* pf = NULL;
@@ -622,11 +622,11 @@ void CBursterDlg::OnBnClickedButton3_Clear()
 //保存
 void CBursterDlg::OnBnClickedButton1_Save()
 {
-	if (m_Data.size() == 0)
-	{
-		MessageBox(_T("无可保存信息!"));
-		return;
-	}
+	//if (m_Data.size() == 0)
+	//{
+	//	MessageBox(_T("无可保存信息!"));
+	//	return;
+	//}
 
 	char szPath[MAX_PATH];     //存放选择的目录路径 
 	ZeroMemory(szPath, sizeof(szPath));
@@ -659,90 +659,78 @@ void CBursterDlg::OnBnClickedButton1_Save()
 //保存
 bool CBursterDlg::Save(const char* fn, const char* rb)
 {
-	if (m_Data.size() == 0)
-		return false;
-
 	FILE* pf = 0;
 	char buf[64];
 	fopen_s(&pf, fn, rb);
 
-	sprintf_s(buf, "详细信息%d", m_Data.size());
-	fwrite(buf, strlen(buf), 1, pf);
-	fwrite("\r\n", strlen("\r\n"), 1, pf);
-	//写入信息
-	for (int i = 0; i < (int)m_Data.size(); ++i)
+	if (m_Data.size() != 0)
 	{
-		fwrite("\r\n", strlen("\r\n"), 1, pf);
-		fwrite("\r\n", strlen("\r\n"), 1, pf);
-		fwrite("分组时间: ", strlen("分组时间: "), 1, pf);
-		fwrite(m_Data[i].fenZutime.GetBuffer(), m_Data[i].fenZutime.GetLength(), 1, pf);
-		fwrite("\r\n", strlen("\r\n"), 1, pf);
-
-		sprintf_s(buf, "红队%d", m_Data[i].red.size());
-		fwrite(buf, strlen(buf), 1, pf);
-		fwrite("\r\n", strlen("\r\n"), 1, pf);
-
-		for (vector<stMember>::iterator it = m_Data[i].red.begin(); it != m_Data[i].red.end(); ++it)
+		const char* s0 = "========================分组信息============================\r\n";
+		fwrite(s0, strlen(s0), 1, pf);
+		//写入信息
+		for (int i = 0; i < (int)m_Data.size(); ++i)
 		{
-			CString s1 = _T("");
-			s1 = (*it).money > 0 ? _T("+") : _T("");
-			_itoa_s((*it).money * m_Sum, buf, 10);
-			CString s2 = (*it).name + _T("  ") + s1 + buf;
-			fwrite("  ", strlen("  "), 1, pf);
-			fwrite(s2.GetBuffer(), s2.GetLength(), 1, pf);
+			fwrite("分组时间: ", strlen("分组时间: "), 1, pf);
+			fwrite(m_Data[i].fenZutime.GetBuffer(), m_Data[i].fenZutime.GetLength(), 1, pf);
 			fwrite("\r\n", strlen("\r\n"), 1, pf);
-		}
 
-		fwrite("\r\n", strlen("\r\n"), 1, pf);
-		sprintf_s(buf, "蓝队%d", m_Data[i].blue.size());
-		fwrite(buf, strlen(buf), 1, pf);
-		fwrite("\r\n", strlen("\r\n"), 1, pf);
-		for (vector<stMember>::iterator it = m_Data[i].blue.begin(); it != m_Data[i].blue.end(); ++it)
-		{
-			CString s1 = _T("");
-			s1 = (*it).money > 0 ? _T("+") : _T("");
-			_itoa_s((*it).money * m_Sum, buf, 10);
-			CString s2 = (*it).name + _T("  ") + s1 + buf;
-			fwrite("  ", strlen("  "), 1, pf);
-			fwrite(s2.GetBuffer(), s2.GetLength(), 1, pf);
+			sprintf_s(buf, "红队%d", m_Data[i].red.size());
+			fwrite(buf, strlen(buf), 1, pf);
 			fwrite("\r\n", strlen("\r\n"), 1, pf);
-		}
 
-		fwrite("\r\n", strlen("\r\n"), 1, pf);
+			for (vector<stMember>::iterator it = m_Data[i].red.begin(); it != m_Data[i].red.end(); ++it)
+			{
+				CString s1 = _T("");
+				s1 = (*it).money > 0 ? _T("+") : _T("");
+				_itoa_s((*it).money * m_Sum, buf, 10);
+				CString s2 = (*it).name + _T("  ") + s1 + buf;
+				fwrite("  ", strlen("  "), 1, pf);
+				fwrite(s2.GetBuffer(), s2.GetLength(), 1, pf);
+				fwrite("\r\n", strlen("\r\n"), 1, pf);
+			}
 
-		char* vectory;
-		if (m_Data[i].redLose == 1)
-			vectory = "蓝队";
-		else if (m_Data[i].redLose == 0)
-			vectory = "红队";
-		else
-			vectory = "未结束";
+			fwrite("\r\n", strlen("\r\n"), 1, pf);
+			sprintf_s(buf, "蓝队%d", m_Data[i].blue.size());
+			fwrite(buf, strlen(buf), 1, pf);
+			fwrite("\r\n", strlen("\r\n"), 1, pf);
+			for (vector<stMember>::iterator it = m_Data[i].blue.begin(); it != m_Data[i].blue.end(); ++it)
+			{
+				CString s1 = _T("");
+				s1 = (*it).money > 0 ? _T("+") : _T("");
+				_itoa_s((*it).money * m_Sum, buf, 10);
+				CString s2 = (*it).name + _T("  ") + s1 + buf;
+				fwrite("  ", strlen("  "), 1, pf);
+				fwrite(s2.GetBuffer(), s2.GetLength(), 1, pf);
+				fwrite("\r\n", strlen("\r\n"), 1, pf);
+			}
 
-		fwrite("胜利队伍:", strlen("胜利队伍: "), 1, pf);
-		fwrite(vectory, strlen(vectory), 1, pf);
-		fwrite("\r\n", strlen("\r\n"), 1, pf);
-		fwrite("胜利时间: ", strlen("胜利时间: "), 1, pf);
-		if (m_Data[i].redLose == 2)
+			fwrite("\r\n", strlen("\r\n"), 1, pf);
+
+			char* vectory;
+			if (m_Data[i].redLose == 1)
+				vectory = "蓝队";
+			else if (m_Data[i].redLose == 0)
+				vectory = "红队";
+			else
+				vectory = "未结束";
+
+			fwrite("胜利队伍:", strlen("胜利队伍: "), 1, pf);
 			fwrite(vectory, strlen(vectory), 1, pf);
-		else
-			fwrite(m_Data[i].vectoryTmie.GetBuffer(), m_Data[i].vectoryTmie.GetLength(), 1, pf);
-
-		fwrite("\r\n", strlen("\r\n"), 1, pf);
-		fwrite("\r\n", strlen("\r\n"), 1, pf);
-	}
-
-	for (int i = 0; i < 8; ++i)
-	{
-		if (i == 3)
-			fwrite("\r\n===========================================================",
-				strlen("\r\n==========================================================="), 1, pf);
-		else
 			fwrite("\r\n", strlen("\r\n"), 1, pf);
+			fwrite("胜利时间: ", strlen("胜利时间: "), 1, pf);
+			if (m_Data[i].redLose == 2)
+				fwrite(vectory, strlen(vectory), 1, pf);
+			else
+				fwrite(m_Data[i].vectoryTmie.GetBuffer(), m_Data[i].vectoryTmie.GetLength(), 1, pf);
+
+			fwrite("\r\n", strlen("\r\n"), 1, pf);
+			fwrite("\r\n", strlen("\r\n"), 1, pf);
+		}
 	}
 
+	const char* s1 = "========================战绩情况============================\r\n";
+	fwrite(s1, strlen(s1), 1, pf);
 
-	fwrite("战绩情况", strlen("战绩情况"), 1, pf);
-	fwrite("\r\n", strlen("\r\n"), 1, pf);
 	//写入所有人的账单
 	for (int i = 0; i < (int)m_AllMemberVect.size(); ++i)
 	{
@@ -754,9 +742,8 @@ bool CBursterDlg::Save(const char* fn, const char* rb)
 		fwrite("\r\n", strlen("\r\n"), 1, pf);
 	}
 
-	fwrite("\r\n", strlen("\r\n"), 1, pf);
-	fwrite("最佳支付方案", strlen("最佳支付方案"), 1, pf);
-	fwrite("\r\n", strlen("\r\n"), 1, pf);
+	const char* s2 = "========================最佳支付方案============================\r\n";
+	fwrite(s2, strlen(s2), 1, pf);
 
 	//写入最佳支付
 	for (int i = 0; i < (int)m_PaySchemeString.size(); ++i)
@@ -766,14 +753,7 @@ bool CBursterDlg::Save(const char* fn, const char* rb)
 	}
 
 	fwrite("\r\n", strlen("\r\n"), 1, pf);
-
 	fclose(pf);
-
-	CString path;
-	GetModuleFileName(NULL, path.GetBufferSetLength(MAX_PATH + 1), MAX_PATH);
-	path.ReleaseBuffer();
-	int pos = path.ReverseFind('\\');
-	path = path.Left(pos);
 
 	return true;
 }

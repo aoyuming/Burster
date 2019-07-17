@@ -253,7 +253,11 @@ void CConfig::OnNMClickList5(NMHDR *pNMHDR, LRESULT *pResult)
 	//得到选中的行
 	int rank = m_History_LC.GetSelectionMark();
 
-	if ((int)_M->m_AllMemberVect.size() == 0 || rank > (int)_M->m_AllMemberVect.size() )
+	//取消选中
+	((CListCtrl*)GetDlgItem(IDC_LIST5))->SetSelectionMark(-1);
+	((CListCtrl*)GetDlgItem(IDC_LIST5))->SetItemState(rank, 0, -1);
+
+	if ((int)_M->m_AllMemberVect.size() <= 0 || rank > (int)_M->m_AllMemberVect.size() || rank < 0)
 		return;
 
 	CString name = m_History_LC.GetItemText(rank, 0);

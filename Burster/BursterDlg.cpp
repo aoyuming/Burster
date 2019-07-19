@@ -1,5 +1,5 @@
-
-// BursterDlg.cpp : ÊµÏÖÎÄ¼ş
+ï»¿
+// BursterDlg.cpp : å®ç°æ–‡ä»¶
 //
 
 #include "stdafx.h"
@@ -9,6 +9,8 @@
 #include "projectCommand.h"
 #include "Config.h"
 #include "VersionInfo.h"
+#include <time.h>
+#include "Setting.h"
 
 
 #ifdef _DEBUG
@@ -20,10 +22,10 @@ const CString LOCAL_LIVE_UPDATE = _T("liveUpdate.exe");
 const CString TEMP_PATH = _T("c:\\temp");
 const CString REMOTE_LIVE_UPDATE = _T("https://burster-update.oss-cn-beijing.aliyuncs.com/liveUpdate/liveUpdate.exe");
 
-//»ñÈ¡app°²×°Â·¾¶
+//è·å–appå®‰è£…è·¯å¾„
 CString GetAppPath()
 {
-	//±¾³ÌĞò°²×°Â·¾¶
+	//æœ¬ç¨‹åºå®‰è£…è·¯å¾„
 	CString appPath;
 	GetModuleFileName(NULL, appPath.GetBufferSetLength(MAX_PATH + 1), MAX_PATH);
 	appPath.ReleaseBuffer();
@@ -32,7 +34,7 @@ CString GetAppPath()
 	return appPath;
 }
 
-// CBursterDlg ¶Ô»°¿ò
+// CBursterDlg å¯¹è¯æ¡†
 
 CBursterDlg::CBursterDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CBursterDlg::IDD, pParent)
@@ -62,24 +64,27 @@ BEGIN_MESSAGE_MAP(CBursterDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON10, &CBursterDlg::OnBnClickedButton10)
 	ON_WM_TIMER()
 	ON_BN_CLICKED(IDC_BUTTON11, &CBursterDlg::OnBnClickedButton11)
+	ON_WM_COPYDATA()
+	ON_COMMAND(ID_32771, &CBursterDlg::On32771)
+	ON_COMMAND(ID_32775, &CBursterDlg::On32775)
 END_MESSAGE_MAP()
 
 
-// CBursterDlg ÏûÏ¢´¦Àí³ÌĞò
+// CBursterDlg æ¶ˆæ¯å¤„ç†ç¨‹åº
 
 BOOL CBursterDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	::CreateMutex(NULL, TRUE, "4v4·Ö×éÆ÷");//×Ö·û´®ÀïÃæµÄÄÚÈİ¿ÉÒÔËæ±ã¸Ä.ËûÖ»ÊÇÒ»¸öÃû×Ö
+	::CreateMutex(NULL, TRUE, "4v4åˆ†ç»„å™¨");//å­—ç¬¦ä¸²é‡Œé¢çš„å†…å®¹å¯ä»¥éšä¾¿æ”¹.ä»–åªæ˜¯ä¸€ä¸ªåå­—
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
-		AfxMessageBox("ÄãÒÑ¾­´ò¿ªÁË¸Ã³ÌĞò");
+		AfxMessageBox("ä½ å·²ç»æ‰“å¼€äº†è¯¥ç¨‹åº");
 		exit(0);
 		return FALSE;
 	}
 
-	// IDM_ABOUTBOX ±ØĞëÔÚÏµÍ³ÃüÁî·¶Î§ÄÚ¡£
+	// IDM_ABOUTBOX å¿…é¡»åœ¨ç³»ç»Ÿå‘½ä»¤èŒƒå›´å†…ã€‚
 	ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
 	ASSERT(IDM_ABOUTBOX < 0xF000);
 
@@ -97,41 +102,50 @@ BOOL CBursterDlg::OnInitDialog()
 		}
 	}
 
+	CMenu menu;
+	menu.LoadMenu(IDR_MENU1);
+	SetMenu(&menu);
+
 	srand((unsigned int)time(0));
 
-	// ÉèÖÃ´Ë¶Ô»°¿òµÄÍ¼±ê¡£µ±Ó¦ÓÃ³ÌĞòÖ÷´°¿Ú²»ÊÇ¶Ô»°¿òÊ±£¬¿ò¼Ü½«×Ô¶¯
-	//  Ö´ĞĞ´Ë²Ù×÷
-	SetIcon(m_hIcon, TRUE);			// ÉèÖÃ´óÍ¼±ê
-	SetIcon(m_hIcon, FALSE);		// ÉèÖÃĞ¡Í¼±ê
+	// è®¾ç½®æ­¤å¯¹è¯æ¡†çš„å›¾æ ‡ã€‚å½“åº”ç”¨ç¨‹åºä¸»çª—å£ä¸æ˜¯å¯¹è¯æ¡†æ—¶ï¼Œæ¡†æ¶å°†è‡ªåŠ¨
+	//  æ‰§è¡Œæ­¤æ“ä½œ
+	SetIcon(m_hIcon, TRUE);			// è®¾ç½®å¤§å›¾æ ‡
+	SetIcon(m_hIcon, FALSE);		// è®¾ç½®å°å›¾æ ‡
+
+	m_LiveUpdateMode = INVARIABLY;
+	m_LastTime = time(0);
+	m_isManualUpdate = false;
 
 	m_Version[0] = 1;
 	m_Version[1] = 6;
-	m_Version[2] = 0;
+	m_Version[2] = 2;
 
-	//¼ÓÔØ±¾µØÅäÖÃÎÄ¼ş
+	//åŠ è½½æœ¬åœ°é…ç½®æ–‡ä»¶
 	FILE* pf = NULL;
 	CString appPath = GetAppPath();
 	//MessageBox(appPath);
 	fopen_s(&pf, appPath + _T("\\version.manifest"), "rb");
 	if (pf)
 	{
-		fscanf_s(pf, _T("°æ±¾:%d.%d.%d"), &m_Version[0], &m_Version[1], &m_Version[2]);
+		fscanf_s(pf, _T("ç‰ˆæœ¬:%d.%d.%d"), &m_Version[0], &m_Version[1], &m_Version[2]);
 		fclose(pf);
 	}
 
 	CString ver;
-	ver.Format("·Ö×éÆ÷ - v%d.%d.%d", m_Version[0], m_Version[1], m_Version[2]);
+	ver.Format("åˆ†ç»„å™¨ - v%d.%d.%d", m_Version[0], m_Version[1], m_Version[2]);
 	m_Sum = 100;
 	m_SumEdit = (CEdit*)GetDlgItem(IDC_EDIT2);
 	m_SumEdit->SetWindowText(CString(_TEXT("100")));
 	SetWindowText(ver);
 
-	LoadConfiguration();//¼ÓÔØÅäÖÃÎÄ¼ş
+	LoadConfiguration();//åŠ è½½é…ç½®æ–‡ä»¶
+
 	m_CurListBox = (CListBox*)GetDlgItem(IDC_LIST2);
 	m_RedListBox = (CListBox*)GetDlgItem(IDC_LIST4);
 	m_BlueListBox = (CListBox*)GetDlgItem(IDC_LIST3);
 	m_AllListBox = (CListBox*)GetDlgItem(IDC_LIST5);
-	m_PaySchemeListBox = (CListBox*)GetDlgItem(IDC_LIST6);//×î¼ÑÖ§¸¶·½°¸
+	m_PaySchemeListBox = (CListBox*)GetDlgItem(IDC_LIST6);//æœ€ä½³æ”¯ä»˜æ–¹æ¡ˆ
 
 	m_RedListBox->ResetContent();
 	m_BlueListBox->ResetContent();
@@ -155,15 +169,15 @@ BOOL CBursterDlg::OnInitDialog()
 	for (int i = 0; i < (int)m_CurMemberVect.size(); ++i)
 		m_CurListBox->AddString(m_CurMemberVect[i]->name);
 
-	//×î¼ÑÖ§¸¶·½°¸
+	//æœ€ä½³æ”¯ä»˜æ–¹æ¡ˆ
 	PayScheme(&m_PaySchemeString, m_AllMemberVect, m_Sum, m_PaySchemeListBox);
 
 	SetTimer(1, 33, NULL);
 	SetTimer(2, 2000, NULL);
-	return TRUE;  // ³ı·Ç½«½¹µãÉèÖÃµ½¿Ø¼ş£¬·ñÔò·µ»Ø TRUE
+	return TRUE;  // é™¤éå°†ç„¦ç‚¹è®¾ç½®åˆ°æ§ä»¶ï¼Œå¦åˆ™è¿”å› TRUE
 }
 
-//±È½Ï°æ±¾ĞÅÏ¢ 
+//æ¯”è¾ƒç‰ˆæœ¬ä¿¡æ¯ 
 int CBursterDlg::compareVersion(int v1, int v2, int v3)
 {
 	int version1 = m_Version[0] * 100 + m_Version[1] * 10 + m_Version[2];
@@ -171,10 +185,10 @@ int CBursterDlg::compareVersion(int v1, int v2, int v3)
 	return version1 - version2;
 }
 
-//ÏÂÔØÔ¶³ÌÎÄ¼ş ÏÂÔØÏß³Ì
+//ä¸‹è½½è¿œç¨‹æ–‡ä»¶ ä¸‹è½½çº¿ç¨‹
 UINT downRemoteFile(LPVOID lpParam)
 {
-	////¼ì²â¸üĞÂ
+	////æ£€æµ‹æ›´æ–°
 	//CBursterDlg* dlg = (CBursterDlg*)(AfxGetApp()->GetMainWnd());
 	//dlg->inspectUpdate();
 
@@ -184,20 +198,20 @@ UINT downRemoteFile(LPVOID lpParam)
 	int pos = path.ReverseFind('\\');
 	path = path.Left(pos);
 
-	//´ò¿ª¸üĞÂ³ÌĞò
+	//æ‰“å¼€æ›´æ–°ç¨‹åº
 	CString livePath = path + _T('\\') + LOCAL_LIVE_UPDATE;
 
-	//¼ì²é¸üĞÂ³ÌĞòÊÇ·ñ´æÔÚ
+	//æ£€æŸ¥æ›´æ–°ç¨‹åºæ˜¯å¦å­˜åœ¨
 	//if (!PathFileExists(path + _T('\\') + LOCAL_LIVE_UPDATE))
 	{
-		//ÏÂÔØÔ¶³Ì¸üĞÂ³ÌĞò
+		//ä¸‹è½½è¿œç¨‹æ›´æ–°ç¨‹åº
 		CString szUrl = REMOTE_LIVE_UPDATE, rdStr;
-		rdStr.Format(_T("?abc=%d"), time(NULL)); // Éú³ÉËæ»úURL
+		rdStr.Format(_T("?abc=%d"), time(NULL)); // ç”ŸæˆéšæœºURL
 		szUrl += rdStr;
 		CString localPath = path + _T('\\') + LOCAL_LIVE_UPDATE;
 		HRESULT ret = URLDownloadToFile(NULL, szUrl, localPath, 0, NULL);
 
-		if (S_OK != ret)//ÏÂÔØ³ö´í
+		if (S_OK != ret)//ä¸‹è½½å‡ºé”™
 			return -1;
 	}
 
@@ -206,19 +220,18 @@ UINT downRemoteFile(LPVOID lpParam)
 	ShExecInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
 	ShExecInfo.hwnd = NULL;
 	ShExecInfo.lpVerb = _T("open");
-	//ÊäÈëÒªµ÷ÓÃµÄexeÎÄ¼şÂ·¾¶
+	//è¾“å…¥è¦è°ƒç”¨çš„exeæ–‡ä»¶è·¯å¾„
 	ShExecInfo.lpFile = livePath;
-	//´«ÈëÃüÁîĞĞ²ÎÊıÊı¾İ
-	ShExecInfo.lpParameters = _T("token:fzq_update|className:fzq"); //ÈôÃ»ÓĞÃüÁîĞĞ²ÎÊı£¬¿ÉÎªNULL
-	ShExecInfo.lpDirectory = NULL;//ÕâÀïexeµÄÄ¿Â¼¿ÉºöÂÔ£¬Ğ´ÎªNULL
-	ShExecInfo.nShow = SW_SHOWDEFAULT;//ÕâÀïÉèÖÃÎª²»ÏÔÊ¾exe½çÃæ£¬ÈôÉèÖÃÎªSW_SHOW£¬Ôò¿ÉÒÔÏÔÊ¾exe½çÃæ
+	//ä¼ å…¥å‘½ä»¤è¡Œå‚æ•°æ•°æ®
+	ShExecInfo.lpParameters = _T("token:fzq_update|className:fzq"); //è‹¥æ²¡æœ‰å‘½ä»¤è¡Œå‚æ•°ï¼Œå¯ä¸ºNULL
+	ShExecInfo.lpDirectory = NULL;//è¿™é‡Œexeçš„ç›®å½•å¯å¿½ç•¥ï¼Œå†™ä¸ºNULL
+	ShExecInfo.nShow = SW_SHOWDEFAULT;//è¿™é‡Œè®¾ç½®ä¸ºä¸æ˜¾ç¤ºexeç•Œé¢ï¼Œè‹¥è®¾ç½®ä¸ºSW_SHOWï¼Œåˆ™å¯ä»¥æ˜¾ç¤ºexeç•Œé¢
 	ShExecInfo.hInstApp = NULL;
 	ShellExecuteEx(&ShExecInfo);
-
 	return 0;
 }
 
-//¼ì²é¸üĞÂ
+//æ£€æŸ¥æ›´æ–°
 bool CBursterDlg::inspectUpdate()
 {
 	CString path;
@@ -228,11 +241,11 @@ bool CBursterDlg::inspectUpdate()
 	path = path.Left(pos);
 
 	CString szUrl = REMOTE_VERSION_URL, rdStr;
-	rdStr.Format(_T("?abc=%d"), time(NULL)); // Éú³ÉËæ»úURL
+	rdStr.Format(_T("?abc=%d"), time(NULL)); // ç”ŸæˆéšæœºURL
 	szUrl += rdStr;
 	HRESULT ret = URLDownloadToFile(NULL, szUrl, TEMP_PATH, 0, NULL);
 
-	if (S_OK != ret)//ÏÂÔØ³ö´í
+	if (S_OK != ret)//ä¸‹è½½å‡ºé”™
 		return FALSE;
 
 	FILE* pf = NULL;
@@ -241,26 +254,26 @@ bool CBursterDlg::inspectUpdate()
 	if (NULL == pf)
 		return FALSE;
 
-	//°æ±¾ºÅ
+	//ç‰ˆæœ¬å·
 	int v1, v2, v3;
-	fscanf_s(pf, _T("°æ±¾.%d.%d.%d"), &v1, &v2, &v3);
+	fscanf_s(pf, _T("ç‰ˆæœ¬.%d.%d.%d"), &v1, &v2, &v3);
 
-	//ÅĞ¶ÏÊÇ·ñ¸üĞÂ
+	//åˆ¤æ–­æ˜¯å¦æ›´æ–°
 	if (compareVersion(v1, v2, v3) >= 0)
 	{
 		fclose(pf);
 		return FALSE;
 	}
 
-	//»ñÈ¡¸üĞÂµÄĞÅÏ¢
+	//è·å–æ›´æ–°çš„ä¿¡æ¯
 	CString allMsg, curMsg;
-	allMsg.Format(_T("×îĞÂ°æ±¾v%d.%d.%d\r\n"), v1, v2, v3);
+	allMsg.Format(_T("æœ€æ–°ç‰ˆæœ¬v%d.%d.%d\r\n"), v1, v2, v3);
 	char buf[64];
 	int msgNum = 0;
-	fscanf_s(pf, _T("\r\nĞÅÏ¢ÊıÁ¿=%d"), &msgNum);
+	fscanf_s(pf, _T("\r\nä¿¡æ¯æ•°é‡=%d"), &msgNum);
 	for (int i = 0; i < msgNum; ++i)
 	{
-		fscanf_s(pf, _T("\r\n¡¾%d.%d.%d¡¿%s"), &v1, &v2, &v3, buf, 64);
+		fscanf_s(pf, _T("\r\nã€%d.%d.%dã€‘%s"), &v1, &v2, &v3, buf, 64);
 		if (compareVersion(v1, v2, v3) >= 0)
 			break;
 		curMsg.Format(_T("%d."), i + 1);
@@ -271,40 +284,40 @@ bool CBursterDlg::inspectUpdate()
 
 	fclose(pf);
 
-	//¼ì²é¸üĞÂ³ÌĞòÊÇ·ñ´æÔÚ
+	//æ£€æŸ¥æ›´æ–°ç¨‹åºæ˜¯å¦å­˜åœ¨
 	if (!PathFileExists(path + _T('\\') + LOCAL_LIVE_UPDATE))
 	{
-		//ÏÂÔØÔ¶³Ì¸üĞÂ³ÌĞò
+		//ä¸‹è½½è¿œç¨‹æ›´æ–°ç¨‹åº
 		CString szUrl = REMOTE_LIVE_UPDATE, rdStr;
-		rdStr.Format(_T("?abc=%d"), time(NULL)); // Éú³ÉËæ»úURL
+		rdStr.Format(_T("?abc=%d"), time(NULL)); // ç”ŸæˆéšæœºURL
 		szUrl += rdStr;
 		CString localPath = path + _T('\\') + LOCAL_LIVE_UPDATE;
 		HRESULT ret = URLDownloadToFile(NULL, szUrl, localPath, 0, NULL);
 
-		if (S_OK != ret)//ÏÂÔØ³ö´í
+		if (S_OK != ret)//ä¸‹è½½å‡ºé”™
 			return -1;
 	}
 
-	//´ò¿ª¸üĞÂ°æ±¾¶Ô»°¿ò
+	//æ‰“å¼€æ›´æ–°ç‰ˆæœ¬å¯¹è¯æ¡†
 	CVersionInfo verInfo(allMsg);
 	verInfo.DoModal();
 
 	return true;
 }
 
-// Èç¹ûÏò¶Ô»°¿òÌí¼Ó×îĞ¡»¯°´Å¥£¬ÔòĞèÒªÏÂÃæµÄ´úÂë
-//  À´»æÖÆ¸ÃÍ¼±ê¡£¶ÔÓÚÊ¹ÓÃÎÄµµ/ÊÓÍ¼Ä£ĞÍµÄ MFC Ó¦ÓÃ³ÌĞò£¬
-//  Õâ½«ÓÉ¿ò¼Ü×Ô¶¯Íê³É¡£
+// å¦‚æœå‘å¯¹è¯æ¡†æ·»åŠ æœ€å°åŒ–æŒ‰é’®ï¼Œåˆ™éœ€è¦ä¸‹é¢çš„ä»£ç 
+//  æ¥ç»˜åˆ¶è¯¥å›¾æ ‡ã€‚å¯¹äºä½¿ç”¨æ–‡æ¡£/è§†å›¾æ¨¡å‹çš„ MFC åº”ç”¨ç¨‹åºï¼Œ
+//  è¿™å°†ç”±æ¡†æ¶è‡ªåŠ¨å®Œæˆã€‚
 
 void CBursterDlg::OnPaint()
 {
 	if (IsIconic())
 	{
-		CPaintDC dc(this); // ÓÃÓÚ»æÖÆµÄÉè±¸ÉÏÏÂÎÄ
+		CPaintDC dc(this); // ç”¨äºç»˜åˆ¶çš„è®¾å¤‡ä¸Šä¸‹æ–‡
 
 		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
 
-		// Ê¹Í¼±êÔÚ¹¤×÷Çø¾ØĞÎÖĞ¾ÓÖĞ
+		// ä½¿å›¾æ ‡åœ¨å·¥ä½œåŒºçŸ©å½¢ä¸­å±…ä¸­
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
 		CRect rect;
@@ -312,7 +325,7 @@ void CBursterDlg::OnPaint()
 		int x = (rect.Width() - cxIcon + 1) / 2;
 		int y = (rect.Height() - cyIcon + 1) / 2;
 
-		// »æÖÆÍ¼±ê
+		// ç»˜åˆ¶å›¾æ ‡
 		dc.DrawIcon(x, y, m_hIcon);
 	}
 	else
@@ -321,14 +334,14 @@ void CBursterDlg::OnPaint()
 	}
 }
 
-//µ±ÓÃ»§ÍÏ¶¯×îĞ¡»¯´°¿ÚÊ±ÏµÍ³µ÷ÓÃ´Ëº¯ÊıÈ¡µÃ¹â±ê
-//ÏÔÊ¾¡£
+//å½“ç”¨æˆ·æ‹–åŠ¨æœ€å°åŒ–çª—å£æ—¶ç³»ç»Ÿè°ƒç”¨æ­¤å‡½æ•°å–å¾—å…‰æ ‡
+//æ˜¾ç¤ºã€‚
 HCURSOR CBursterDlg::OnQueryDragIcon()
 {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-//±£´æÅäÖÃÎÄ¼ş
+//ä¿å­˜é…ç½®æ–‡ä»¶
 void CBursterDlg::SaveConfiguration()
 {
 	FILE* pf = NULL;
@@ -337,48 +350,57 @@ void CBursterDlg::SaveConfiguration()
 	char buf[32];
 	_itoa_s(m_AllMemberVect.size(), buf, 10);
 
-	//È«²¿µÄÈËÊı
-	CString Num = _T("È«²¿ÈËÊı=") + CString(buf);
+	//æ£€æŸ¥æ›´æ–°çš„é¢‘ç‡
+	CString Live;
+	Live.Format(_T("æ£€æŸ¥æ›´æ–°çš„é¢‘ç‡=%d\r\n"), m_LiveUpdateMode);
+	fwrite(Live.GetBuffer(), Live.GetLength(), 1, pf);
+
+	//ä¸Šä¸€æ¬¡æ£€æŸ¥çš„æ—¶é—´
+	Live.Format(_T("ä¸Šä¸€æ¬¡æ›´æ–°æ—¶é—´=%d\r\n"), (int)m_LastTime);
+	fwrite(Live.GetBuffer(), Live.GetLength(), 1, pf);
+
+	//å…¨éƒ¨çš„äººæ•°
+	CString Num = _T("å…¨éƒ¨äººæ•°=") + CString(buf);
 	fwrite(Num.GetBuffer(), Num.GetLength(), 1, pf);
 
-	//Ğ´ÈëÈ«²¿³ÉÔ±µÄĞÅÏ¢
+	//å†™å…¥å…¨éƒ¨æˆå‘˜çš„ä¿¡æ¯
 	for (int i = 0; i < (int)m_AllMemberVect.size(); ++i)
 	{
 		_itoa_s(m_AllMemberVect[i]->money, buf, 10);
-		CString s = _T("\r\nĞÕÃû=") + m_AllMemberVect[i]->name;
+		CString s = _T("\r\nå§“å=") + m_AllMemberVect[i]->name;
 		fwrite(s.GetBuffer(), s.GetLength(), 1, pf);
-		s = +_T("\r\n½ğÇ®=") + CString(buf);
+		s = +_T("\r\né‡‘é’±=") + CString(buf);
 		fwrite(s.GetBuffer(), s.GetLength(), 1, pf);
 	}
 
 	fwrite("\r\n", strlen("\r\n"), 1, pf);
 
-	//Ğ´Èë¸ë×ÓÈËÊı
+	//å†™å…¥é¸½å­äººæ•°
 	_itoa_s(m_DoveMemberVect.size(), buf, 10);
-	Num = _T("\r\n¸ë×ÓÈËÊı=") + CString(buf);
+	Num = _T("\r\né¸½å­äººæ•°=") + CString(buf);
 	fwrite(Num.GetBuffer(), Num.GetLength(), 1, pf);
 
-	//Ğ´Èë¸ë×Ó³ÉÔ±µÄĞÅÏ¢
+	//å†™å…¥é¸½å­æˆå‘˜çš„ä¿¡æ¯
 	for (int i = 0; i < (int)m_DoveMemberVect.size(); ++i)
 	{
 		_itoa_s(m_DoveMemberVect[i]->money, buf, 10);
-		CString s = _T("\r\nĞÕÃû=") + m_DoveMemberVect[i]->name;
+		CString s = _T("\r\nå§“å=") + m_DoveMemberVect[i]->name;
 		fwrite(s.GetBuffer(), s.GetLength(), 1, pf);
 	}
 
 	fwrite("\r\n", strlen("\r\n"), 1, pf);
 
 	_itoa_s(m_RedMemberVect.size(), buf, 10);
-	Num = _T("\r\nºì¶ÓÈËÊı=") + CString(buf);
+	Num = _T("\r\nçº¢é˜Ÿäººæ•°=") + CString(buf);
 	fwrite(Num.GetBuffer(), Num.GetLength(), 1, pf);
 
-	//Ğ´Èëºì¶ÓÈËÊı
+	//å†™å…¥çº¢é˜Ÿäººæ•°
 	if (m_RedMemberVect.size() != 0)
 	{
 		for (int i = 0; i < (int)m_RedMemberVect.size(); ++i)
 		{
 			_itoa_s(m_RedMemberVect[i]->money, buf, 10);
-			CString s = _T("\r\nĞÕÃû=") + m_RedMemberVect[i]->name;
+			CString s = _T("\r\nå§“å=") + m_RedMemberVect[i]->name;
 			fwrite(s.GetBuffer(), s.GetLength(), 1, pf);
 		}
 	}
@@ -386,16 +408,16 @@ void CBursterDlg::SaveConfiguration()
 	fwrite("\r\n", strlen("\r\n"), 1, pf);
 
 	_itoa_s(m_BlueMemberVect.size(), buf, 10);
-	Num = _T("\r\nÀ¶¶ÓÈËÊı=") + CString(buf);
+	Num = _T("\r\nè“é˜Ÿäººæ•°=") + CString(buf);
 	fwrite(Num.GetBuffer(), Num.GetLength(), 1, pf);
 
-	//Ğ´ÈëÀ¶¶ÓÈËÊı
+	//å†™å…¥è“é˜Ÿäººæ•°
 	if (m_BlueMemberVect.size() != 0)
 	{
 		for (int i = 0; i < (int)m_BlueMemberVect.size(); ++i)
 		{
 			_itoa_s(m_BlueMemberVect[i]->money, buf, 10);
-			CString s = _T("\r\nĞÕÃû=") + m_BlueMemberVect[i]->name;
+			CString s = _T("\r\nå§“å=") + m_BlueMemberVect[i]->name;
 			fwrite(s.GetBuffer(), s.GetLength(), 1, pf);
 		}
 	}
@@ -405,7 +427,7 @@ void CBursterDlg::SaveConfiguration()
 	fclose(pf);
 }
 
-//¼ÓÔØÅäÖÃÎÄ¼ş
+//åŠ è½½é…ç½®æ–‡ä»¶
 bool CBursterDlg::LoadConfiguration()
 {
 	FILE* pf = NULL;
@@ -414,28 +436,34 @@ bool CBursterDlg::LoadConfiguration()
 	if (NULL == pf)
 		return FALSE;
 
-	//È«²¿ÈËÊı
+	//æ£€æŸ¥æ›´æ–°çš„é¢‘ç‡
+	fscanf_s(pf, _T("æ£€æŸ¥æ›´æ–°çš„é¢‘ç‡=%d\r\n"), &m_LiveUpdateMode);
+
+	//æ˜¯å¦æ£€æŸ¥æ›´æ–°è¿‡
+	fscanf_s(pf, _T("ä¸Šä¸€æ¬¡æ›´æ–°æ—¶é—´=%d\r\n"), &m_LastTime);
+
+	//å…¨éƒ¨äººæ•°
 	int allNum = 0;
-	fscanf_s(pf, "È«²¿ÈËÊı=%d", &allNum);
+	fscanf_s(pf, "å…¨éƒ¨äººæ•°=%d", &allNum);
 
 	char buf[64];
 	for (int i = 0; i < allNum; ++i)
 	{
 		stMember* p = new stMember;
-		fscanf_s(pf, "\r\nĞÕÃû=%s", buf, 32);
-		fscanf_s(pf, "\r\n½ğÇ®=%d", &p->money);
+		fscanf_s(pf, "\r\nå§“å=%s", buf, 32);
+		fscanf_s(pf, "\r\né‡‘é’±=%d", &p->money);
 		p->name = buf;
 		m_AllMemberVect.push_back(p);
 		m_CurMemberVect.push_back(p);
 	}
 
-	//¸ë×ÓÈËÊı
+	//é¸½å­äººæ•°
 	allNum = 0;
-	fscanf_s(pf, "\r\n¸ë×ÓÈËÊı=%d", &allNum);
+	fscanf_s(pf, "\r\né¸½å­äººæ•°=%d", &allNum);
 
 	for (int i = 0; i < allNum; ++i)
 	{
-		fscanf_s(pf, "\r\nĞÕÃû=%s", buf, 32);
+		fscanf_s(pf, "\r\nå§“å=%s", buf, 32);
 
 		for (int j = 0; j < (int)m_CurMemberVect.size(); ++j)
 		{
@@ -448,13 +476,13 @@ bool CBursterDlg::LoadConfiguration()
 		}
 	}
 
-	//ºì¶ÓÈËÊı
+	//çº¢é˜Ÿäººæ•°
 	allNum = 0;
-	fscanf_s(pf, "\r\nºì¶ÓÈËÊı=%d", &allNum);
+	fscanf_s(pf, "\r\nçº¢é˜Ÿäººæ•°=%d", &allNum);
 
 	for (int i = 0; i < allNum; ++i)
 	{
-		fscanf_s(pf, "\r\nĞÕÃû=%s", buf, 32);
+		fscanf_s(pf, "\r\nå§“å=%s", buf, 32);
 
 		for (int j = 0; j < (int)m_CurMemberVect.size(); ++j)
 		{
@@ -466,13 +494,13 @@ bool CBursterDlg::LoadConfiguration()
 		}
 	}
 
-	//À¶¶ÓÈËÊı
+	//è“é˜Ÿäººæ•°
 	allNum = 0;
-	fscanf_s(pf, "\r\nÀ¶¶ÓÈËÊı=%d", &allNum);
+	fscanf_s(pf, "\r\nè“é˜Ÿäººæ•°=%d", &allNum);
 
 	for (int i = 0; i < allNum; ++i)
 	{
-		fscanf_s(pf, "\r\nĞÕÃû=%s", buf, 32);
+		fscanf_s(pf, "\r\nå§“å=%s", buf, 32);
 
 		for (int j = 0; j < (int)m_CurMemberVect.size(); ++j)
 		{
@@ -484,17 +512,17 @@ bool CBursterDlg::LoadConfiguration()
 		}
 	}
 
-	//¼ÓÔØĞÅÏ¢
+	//åŠ è½½ä¿¡æ¯
 	allNum = 0;
-	fscanf_s(pf, "\r\nÏêÏ¸ĞÅÏ¢%d", &allNum);
+	fscanf_s(pf, "\r\nè¯¦ç»†ä¿¡æ¯%d", &allNum);
 	for (int i = 0; i < allNum; ++i)
 	{
 		stData d;
-		fscanf_s(pf, "\r\n·Ö×éÊ±¼ä:%s", buf, 64);
+		fscanf_s(pf, "\r\nåˆ†ç»„æ—¶é—´:%s", buf, 64);
 		d.fenZutime = buf;
 
 		int redNum = 0, blueNum = 0;
-		fscanf_s(pf, "\r\nºì¶Ó%d", &redNum);
+		fscanf_s(pf, "\r\nçº¢é˜Ÿ%d", &redNum);
 
 		for (int j = 0; j < redNum; ++j)
 		{
@@ -505,7 +533,7 @@ bool CBursterDlg::LoadConfiguration()
 			d.red.push_back(m);
 		}
 
-		fscanf_s(pf, "\r\nÀ¶¶Ó%d", &blueNum);
+		fscanf_s(pf, "\r\nè“é˜Ÿ%d", &blueNum);
 
 		for (int j = 0; j < blueNum; ++j)
 		{
@@ -515,16 +543,16 @@ bool CBursterDlg::LoadConfiguration()
 			m.name = buf;
 			d.blue.push_back(m);
 		}
-		fscanf_s(pf, "\r\nÊ¤Àû¶ÓÎé:%s", buf, 64);
-		if (strcmp(buf, "Î´½áÊø") == 0)
+		fscanf_s(pf, "\r\nèƒœåˆ©é˜Ÿä¼:%s", buf, 64);
+		if (strcmp(buf, "æœªç»“æŸ") == 0)
 			d.redLose = 2;
-		else if (strcmp(buf, "ºì¶Ó") == 0)
+		else if (strcmp(buf, "çº¢é˜Ÿ") == 0)
 			d.redLose = 0;
 		else
 			d.redLose = 1;
 
-		fscanf_s(pf, "\r\nÊ¤ÀûÊ±¼ä:%s", buf, 64);
-		if (strcmp(buf, "Î´½áÊø") == 0)
+		fscanf_s(pf, "\r\nèƒœåˆ©æ—¶é—´:%s", buf, 64);
+		if (strcmp(buf, "æœªç»“æŸ") == 0)
 			d.redLose = 2;
 		else
 			d.vectoryTmie = buf;
@@ -537,10 +565,10 @@ bool CBursterDlg::LoadConfiguration()
 	return true;
 }
 
-//Ìí¼Ó
+//æ·»åŠ 
 void CBursterDlg::OnBnClickedButton8_Add()
 {
-	//´´½¨Ìí¼Ó´°¿Ú
+	//åˆ›å»ºæ·»åŠ çª—å£
 	CString name;
 	addName addDlg(name, this);
 	addDlg.DoModal();
@@ -548,49 +576,49 @@ void CBursterDlg::OnBnClickedButton8_Add()
 	if (name == _T(""))
 		return;
 
-	//´´½¨Ìí¼Ó³ÉÔ±ÃüÁî
+	//åˆ›å»ºæ·»åŠ æˆå‘˜å‘½ä»¤
 	AddCommand* com = new AddCommand(name, this);
 
-	//Ö´ĞĞÃüÁî ·µ»Ø³É¹¦¾Í·ÅÈëÃüÁî¹ÜÀíÆ÷ÀïÃæ ·ñÔòÉ¾³ı×Ô¼º
+	//æ‰§è¡Œå‘½ä»¤ è¿”å›æˆåŠŸå°±æ”¾å…¥å‘½ä»¤ç®¡ç†å™¨é‡Œé¢ å¦åˆ™åˆ é™¤è‡ªå·±
 	if (com->execute())
 		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 
-	//µİ¹éÌí¼Ó
+	//é€’å½’æ·»åŠ 
 	OnBnClickedButton8_Add();
 }
 
-//É¾³ı
+//åˆ é™¤
 void CBursterDlg::OnBnClickedButton2_Delete()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	CListBox* listbox = (CListBox*)GetDlgItem(IDC_LIST2);
 	int index = -1;
-	CSelectDlg dlg(m_CurMemberVect, index, NULL, _T("ÇëÑ¡ÔñÒªÉ¾³ıµÄ³ÉÔ±"), _T("É¾³ı"));
+	CSelectDlg dlg(m_CurMemberVect, index, NULL, _T("è¯·é€‰æ‹©è¦åˆ é™¤çš„æˆå‘˜"), _T("åˆ é™¤"));
 	dlg.DoModal();
 
 	if (index == -1)
 		return;
 
-	//´´½¨Ìí¼Ó³ÉÔ±ÃüÁî
+	//åˆ›å»ºæ·»åŠ æˆå‘˜å‘½ä»¤
 	EraseCommand* com = new EraseCommand(index, this);
 
-	//Ö´ĞĞÃüÁî ·µ»Ø³É¹¦¾Í·ÅÈëÃüÁî¹ÜÀíÆ÷ÀïÃæ ·ñÔòÉ¾³ı×Ô¼º
+	//æ‰§è¡Œå‘½ä»¤ è¿”å›æˆåŠŸå°±æ”¾å…¥å‘½ä»¤ç®¡ç†å™¨é‡Œé¢ å¦åˆ™åˆ é™¤è‡ªå·±
 	if (com->execute())
 		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 }
 
-//Çå¿Õ
+//æ¸…ç©º
 void CBursterDlg::OnBnClickedButton3_Clear()
 {
-	//ÌáÊ¾
-	if (MessageBox(_TEXT("È·¶¨Çå¿ÕÂğ£¿  ´Ë²Ù×÷²»¿É³·»Ø£¡"), _TEXT("ÌáÊ¾"), MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
+	//æç¤º
+	if (MessageBox(_TEXT("ç¡®å®šæ¸…ç©ºå—ï¼Ÿ  æ­¤æ“ä½œä¸å¯æ’¤å›ï¼"), _TEXT("æç¤º"), MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
 		return;
 
-	//ÁĞ±í¿ò
+	//åˆ—è¡¨æ¡†
 	CListBox* list[] =
 	{
 		m_AllListBox,
@@ -600,14 +628,15 @@ void CBursterDlg::OnBnClickedButton3_Clear()
 		m_PaySchemeListBox
 	};
 
-	//Çå¿Õ
+	//æ¸…ç©º
 	for (int i = 0; i < 5; ++i)
 		list[i]->ResetContent();
 
-	//ÊÍ·Å¶ÑÄÚ´æ
+	//é‡Šæ”¾å †å†…å­˜
 	for (int i = 0; i < (int)m_AllMemberVect.size(); ++i)
 		delete m_AllMemberVect[i];
 
+	m_PaySchemeString.clear();
 	m_AllMemberVect.clear();
 	m_CurMemberVect.clear();
 	m_RedMemberVect.clear();
@@ -615,48 +644,48 @@ void CBursterDlg::OnBnClickedButton3_Clear()
 	m_Data.clear();
 	m_DoveMemberVect.clear();
 
-	//ÊÍ·Å
+	//é‡Šæ”¾
 	CommandManager::getInstance()->release();
 }
 
-//±£´æ
+//ä¿å­˜
 void CBursterDlg::OnBnClickedButton1_Save()
 {
 	//if (m_Data.size() == 0)
 	//{
-	//	MessageBox(_T("ÎŞ¿É±£´æĞÅÏ¢!"));
+	//	MessageBox(_T("æ— å¯ä¿å­˜ä¿¡æ¯!"));
 	//	return;
 	//}
 
-	char szPath[MAX_PATH];     //´æ·ÅÑ¡ÔñµÄÄ¿Â¼Â·¾¶ 
+	char szPath[MAX_PATH];     //å­˜æ”¾é€‰æ‹©çš„ç›®å½•è·¯å¾„ 
 	ZeroMemory(szPath, sizeof(szPath));
 	BROWSEINFO bi;
 	bi.hwndOwner = m_hWnd;
 	bi.pidlRoot = NULL;
 	bi.pszDisplayName = szPath;
-	bi.lpszTitle = "ÇëÑ¡ÔñĞèÒª±£´æµÄÄ¿Â¼£º";
+	bi.lpszTitle = "è¯·é€‰æ‹©éœ€è¦ä¿å­˜çš„ç›®å½•ï¼š";
 	bi.ulFlags = 0;
 	bi.lpfn = NULL;
 	bi.lParam = 0;
 	bi.iImage = 0;
 
-	//µ¯³öÑ¡ÔñÄ¿Â¼¶Ô»°¿ò
+	//å¼¹å‡ºé€‰æ‹©ç›®å½•å¯¹è¯æ¡†
 	LPITEMIDLIST lp = SHBrowseForFolder(&bi);
 	if (lp && SHGetPathFromIDList(lp, szPath))
 	{
 		CString temp;
 		temp = szPath;
-		temp += _T("\\Õ½¼¨Çé¿ö.txt");
+		temp += _T("\\æˆ˜ç»©æƒ…å†µ.txt");
 
 		if (Save(temp, "wb"))
 		{
-			CString s = "ÅäÖÃĞÅÏ¢ÒÔ±£´æÔÚ" + temp;
-			MessageBox(_TEXT(s.GetString()), _TEXT("ÌáÊ¾"), MB_OK | MB_ICONASTERISK);
+			CString s = "é…ç½®ä¿¡æ¯ä»¥ä¿å­˜åœ¨" + temp;
+			MessageBox(_TEXT(s.GetString()), _TEXT("æç¤º"), MB_OK | MB_ICONASTERISK);
 		}
 	}
 }
 
-//±£´æ
+//ä¿å­˜
 bool CBursterDlg::Save(const char* fn, const char* rb)
 {
 	FILE* pf = 0;
@@ -665,16 +694,16 @@ bool CBursterDlg::Save(const char* fn, const char* rb)
 
 	if (m_Data.size() != 0)
 	{
-		const char* s0 = "========================·Ö×éĞÅÏ¢============================\r\n";
+		const char* s0 = "========================åˆ†ç»„ä¿¡æ¯============================\r\n";
 		fwrite(s0, strlen(s0), 1, pf);
-		//Ğ´ÈëĞÅÏ¢
+		//å†™å…¥ä¿¡æ¯
 		for (int i = 0; i < (int)m_Data.size(); ++i)
 		{
-			fwrite("·Ö×éÊ±¼ä: ", strlen("·Ö×éÊ±¼ä: "), 1, pf);
+			fwrite("åˆ†ç»„æ—¶é—´: ", strlen("åˆ†ç»„æ—¶é—´: "), 1, pf);
 			fwrite(m_Data[i].fenZutime.GetBuffer(), m_Data[i].fenZutime.GetLength(), 1, pf);
 			fwrite("\r\n", strlen("\r\n"), 1, pf);
 
-			sprintf_s(buf, "ºì¶Ó%d", m_Data[i].red.size());
+			sprintf_s(buf, "çº¢é˜Ÿ%d", m_Data[i].red.size());
 			fwrite(buf, strlen(buf), 1, pf);
 			fwrite("\r\n", strlen("\r\n"), 1, pf);
 
@@ -690,7 +719,7 @@ bool CBursterDlg::Save(const char* fn, const char* rb)
 			}
 
 			fwrite("\r\n", strlen("\r\n"), 1, pf);
-			sprintf_s(buf, "À¶¶Ó%d", m_Data[i].blue.size());
+			sprintf_s(buf, "è“é˜Ÿ%d", m_Data[i].blue.size());
 			fwrite(buf, strlen(buf), 1, pf);
 			fwrite("\r\n", strlen("\r\n"), 1, pf);
 			for (vector<stMember>::iterator it = m_Data[i].blue.begin(); it != m_Data[i].blue.end(); ++it)
@@ -708,16 +737,16 @@ bool CBursterDlg::Save(const char* fn, const char* rb)
 
 			char* vectory;
 			if (m_Data[i].redLose == 1)
-				vectory = "À¶¶Ó";
+				vectory = "è“é˜Ÿ";
 			else if (m_Data[i].redLose == 0)
-				vectory = "ºì¶Ó";
+				vectory = "çº¢é˜Ÿ";
 			else
-				vectory = "Î´½áÊø";
+				vectory = "æœªç»“æŸ";
 
-			fwrite("Ê¤Àû¶ÓÎé:", strlen("Ê¤Àû¶ÓÎé: "), 1, pf);
+			fwrite("èƒœåˆ©é˜Ÿä¼:", strlen("èƒœåˆ©é˜Ÿä¼: "), 1, pf);
 			fwrite(vectory, strlen(vectory), 1, pf);
 			fwrite("\r\n", strlen("\r\n"), 1, pf);
-			fwrite("Ê¤ÀûÊ±¼ä: ", strlen("Ê¤ÀûÊ±¼ä: "), 1, pf);
+			fwrite("èƒœåˆ©æ—¶é—´: ", strlen("èƒœåˆ©æ—¶é—´: "), 1, pf);
 			if (m_Data[i].redLose == 2)
 				fwrite(vectory, strlen(vectory), 1, pf);
 			else
@@ -728,10 +757,10 @@ bool CBursterDlg::Save(const char* fn, const char* rb)
 		}
 	}
 
-	const char* s1 = "========================Õ½¼¨Çé¿ö============================\r\n";
+	const char* s1 = "========================æˆ˜ç»©æƒ…å†µ============================\r\n";
 	fwrite(s1, strlen(s1), 1, pf);
 
-	//Ğ´ÈëËùÓĞÈËµÄÕËµ¥
+	//å†™å…¥æ‰€æœ‰äººçš„è´¦å•
 	for (int i = 0; i < (int)m_AllMemberVect.size(); ++i)
 	{
 		CString s1 = _T("");
@@ -742,10 +771,10 @@ bool CBursterDlg::Save(const char* fn, const char* rb)
 		fwrite("\r\n", strlen("\r\n"), 1, pf);
 	}
 
-	const char* s2 = "========================×î¼ÑÖ§¸¶·½°¸============================\r\n";
+	const char* s2 = "========================æœ€ä½³æ”¯ä»˜æ–¹æ¡ˆ============================\r\n";
 	fwrite(s2, strlen(s2), 1, pf);
 
-	//Ğ´Èë×î¼ÑÖ§¸¶
+	//å†™å…¥æœ€ä½³æ”¯ä»˜
 	for (int i = 0; i < (int)m_PaySchemeString.size(); ++i)
 	{
 		fwrite(m_PaySchemeString[i].GetBuffer(), m_PaySchemeString[i].GetLength(), 1, pf);
@@ -758,68 +787,68 @@ bool CBursterDlg::Save(const char* fn, const char* rb)
 	return true;
 }
 
-//·Ö×é
+//åˆ†ç»„
 void CBursterDlg::OnBnClickedButton4_Separate()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	if (m_CurMemberVect.size() % 2 != 0 || m_CurMemberVect.size() < 2)
 	{
-		MessageBox(_TEXT("ÈËÊı²»Æ½¾ù"), _TEXT("ÌáÊ¾"), MB_OK | MB_ICONERROR);
+		MessageBox(_TEXT("äººæ•°ä¸å¹³å‡"), _TEXT("æç¤º"), MB_OK | MB_ICONERROR);
 		return;
 	}
 
 	if (m_RedMemberVect.size() > 0 || m_BlueMemberVect.size() > 0)
 	{
-		if (MessageBox(_TEXT("ÊÇ·ñÖØĞÂ·Ö×é"), _TEXT("ÌáÊ¾"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+		if (MessageBox(_TEXT("æ˜¯å¦é‡æ–°åˆ†ç»„"), _TEXT("æç¤º"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 			return;
 	}
 
-	MessageBox(_TEXT("·Ö×é³É¹¦"), _TEXT("ÌáÊ¾"), MB_OK | MB_ICONASTERISK);
+	MessageBox(_TEXT("åˆ†ç»„æˆåŠŸ"), _TEXT("æç¤º"), MB_OK | MB_ICONASTERISK);
 
-	//´´½¨·Ö×éÃüÁî
+	//åˆ›å»ºåˆ†ç»„å‘½ä»¤
 	GroupingCommand* com = new GroupingCommand(this);
 
-	//Ö´ĞĞÃüÁî ·µ»Ø³É¹¦¾Í·ÅÈëÃüÁî¹ÜÀíÆ÷ÀïÃæ ·ñÔòÉ¾³ı×Ô¼º
+	//æ‰§è¡Œå‘½ä»¤ è¿”å›æˆåŠŸå°±æ”¾å…¥å‘½ä»¤ç®¡ç†å™¨é‡Œé¢ å¦åˆ™åˆ é™¤è‡ªå·±
 	if (com->execute())
 		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 }
 
-//¸Ä±ä½ğÇ®
+//æ”¹å˜é‡‘é’±
 void CBursterDlg::OnBnClickedButton6_Change()
 {
-	//´´½¨¸Ä±ä½ğÇ®ÃüÁî
+	//åˆ›å»ºæ”¹å˜é‡‘é’±å‘½ä»¤
 	ChangedMoneyCommand* com = new ChangedMoneyCommand(this);
 
-	//Ö´ĞĞÃüÁî ·µ»Ø³É¹¦¾Í·ÅÈëÃüÁî¹ÜÀíÆ÷ÀïÃæ ·ñÔòÉ¾³ı×Ô¼º
+	//æ‰§è¡Œå‘½ä»¤ è¿”å›æˆåŠŸå°±æ”¾å…¥å‘½ä»¤ç®¡ç†å™¨é‡Œé¢ å¦åˆ™åˆ é™¤è‡ªå·±
 	if (com->execute())
 		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 }
 
-//ÍË³ö
+//é€€å‡º
 void CBursterDlg::OnClose()
 {
 	SaveConfiguration();
-	//Save("Õ½¼¨Çé¿ö.txt", "wb");
+	//Save("æˆ˜ç»©æƒ…å†µ.txt", "wb");
 
 	for (int i = 0; i < (int)m_AllMemberVect.size(); ++i)
 		delete m_AllMemberVect[i];
 
-	//ÊÍ·ÅÃüÁî»º´æ
+	//é‡Šæ”¾å‘½ä»¤ç¼“å­˜
 	CommandManager::getInstance()->release();
 
-	//É¾³ıÁÙÊ±ÎÄ¼ş
+	//åˆ é™¤ä¸´æ—¶æ–‡ä»¶
 	if (PathFileExists(TEMP_PATH))
 		CFile::Remove(TEMP_PATH);
 
-	//¼ì²â¸üĞÂ³ÌĞòÊÇ·ñÔÚÔËĞĞ
+	//æ£€æµ‹æ›´æ–°ç¨‹åºæ˜¯å¦åœ¨è¿è¡Œ
 	//CWnd* liveUpdate = FindWindow(_T("myLiveUpdate"), NULL);
-	CWnd* liveUpdate = FindWindow(NULL, "·¢ÏÖ¸üĞÂ");
+	CWnd* liveUpdate = FindWindow(NULL, "å‘ç°æ›´æ–°");
 
-	//¹Ø±Õ
+	//å…³é—­
 	if (liveUpdate)
 		liveUpdate->SendMessage(WM_CLOSE);
 
@@ -827,56 +856,56 @@ void CBursterDlg::OnClose()
 	CDialogEx::OnClose();
 }
 
-//À¶¶ÓÊ¤Àû
+//è“é˜Ÿèƒœåˆ©
 void CBursterDlg::OnBnClickedButton5_Blue()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
-	if (MessageBox(_TEXT("À¶¶ÓÊ¤Àû?"), _TEXT("ÌáÊ¾"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
+	if (MessageBox(_TEXT("è“é˜Ÿèƒœåˆ©?"), _TEXT("æç¤º"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 		return;
 
-	//´´½¨Ê¤ÀûÃüÁî
+	//åˆ›å»ºèƒœåˆ©å‘½ä»¤
 	WinCommand* com = new WinCommand(FALSE, this);
 
-	//Ö´ĞĞÃüÁî ·µ»Ø³É¹¦¾Í·ÅÈëÃüÁî¹ÜÀíÆ÷ÀïÃæ ·ñÔòÉ¾³ı×Ô¼º
+	//æ‰§è¡Œå‘½ä»¤ è¿”å›æˆåŠŸå°±æ”¾å…¥å‘½ä»¤ç®¡ç†å™¨é‡Œé¢ å¦åˆ™åˆ é™¤è‡ªå·±
 	if (com->execute())
 		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 }
 
-//ºì¶ÓÊ¤Àû
+//çº¢é˜Ÿèƒœåˆ©
 void CBursterDlg::OnBnClickedButton7_Red()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
-	if (MessageBox(_TEXT("ºì¶ÓÊ¤Àû?"), _TEXT("ÌáÊ¾"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
+	if (MessageBox(_TEXT("çº¢é˜Ÿèƒœåˆ©?"), _TEXT("æç¤º"), MB_YESNO | MB_ICONQUESTION) == IDNO)
 		return;
 
-	//´´½¨Ê¤ÀûÃüÁî
+	//åˆ›å»ºèƒœåˆ©å‘½ä»¤
 	WinCommand* com = new WinCommand(true, this);
 
-	//Ö´ĞĞÃüÁî ·µ»Ø³É¹¦¾Í·ÅÈëÃüÁî¹ÜÀíÆ÷ÀïÃæ ·ñÔòÉ¾³ı×Ô¼º
+	//æ‰§è¡Œå‘½ä»¤ è¿”å›æˆåŠŸå°±æ”¾å…¥å‘½ä»¤ç®¡ç†å™¨é‡Œé¢ å¦åˆ™åˆ é™¤è‡ªå·±
 	if (com->execute())
 		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 }
 
-//³·Ïú
+//æ’¤é”€
 void CBursterDlg::OnBnClickedButton9()
 {
 	CommandManager::getInstance()->undo();
 }
 
-//ÖØ×ö
+//é‡åš
 void CBursterDlg::OnBnClickedButton10()
 {
 	CommandManager::getInstance()->redo();
 }
 
-//¼ÆÊ±Æ÷ÏûÏ¢
+//è®¡æ—¶å™¨æ¶ˆæ¯
 void CBursterDlg::OnTimer(UINT_PTR nIDEvent)
 {
-	// TODO: ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO: åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 	if (nIDEvent == 1)
 	{
 		CButton* undo = (CButton*)GetDlgItem(IDC_BUTTON9);
@@ -899,32 +928,59 @@ void CBursterDlg::OnTimer(UINT_PTR nIDEvent)
 		red->EnableWindow(m_RedMemberVect.size() > 0);
 		blue->EnableWindow(m_BlueMemberVect.size() > 0);
 	}
-	else if (nIDEvent == 2)//¼ì²é¸üĞÂ
+	else if (nIDEvent == 2)//æ£€æŸ¥æ›´æ–°
 	{
-		//Çå³ıµ±Ç°¼ÆÊ±Æ÷
+		//æ¸…é™¤å½“å‰è®¡æ—¶å™¨
 		KillTimer(2);
 
-		//¼ì²â¸üĞÂ
-		m_pThread = AfxBeginThread(downRemoteFile, this);
+		//æ£€æµ‹æ›´æ–°
+		if (m_LiveUpdateMode != UpdateMode::NEVER)
+		{
+			//æ€»æ˜¯æ›´æ–°
+			if (m_LiveUpdateMode == UpdateMode::INVARIABLY)
+				m_pThread = AfxBeginThread(downRemoteFile, this);
+			else
+			{
+				//æ¯å‘¨æ›´æ–°
+				time_t curTime = time(0);
+				time_t week = 604800;//ä¸€å‘¨çš„ç§’æ•°
+				time_t c = curTime - m_LastTime;
+				if (c > week)
+				{
+					m_pThread = AfxBeginThread(downRemoteFile, this);
+					m_LastTime = curTime;
+				}
+			}
+		}
 	}
+	//else if (nIDEvent == 3)
+	//{
+	//	//æ¸…é™¤å½“å‰è®¡æ—¶å™¨
+	//	KillTimer(3);
+
+	//	CWnd* liveUpdate = FindWindow(NULL, "å‘ç°æ›´æ–°");
+
+	//	if (!liveUpdate)
+	//		MessageBox(_T("å·²ç»æ˜¯æœ€æ–°ç‰ˆæœ¬"));
+	//}
 
 	CDialogEx::OnTimer(nIDEvent);
 }
 
-//ÉèÖÃ
+//è®¾ç½®
 void CBursterDlg::OnBnClickedButton11()
 {
-	//´´½¨ÅäÖÃÃüÁî
+	//åˆ›å»ºé…ç½®å‘½ä»¤
 	ConfigCommand* com = new ConfigCommand(this);
 
-	//Ö´ĞĞÃüÁî ·µ»Ø³É¹¦¾Í·ÅÈëÃüÁî¹ÜÀíÆ÷ÀïÃæ ·ñÔòÉ¾³ı×Ô¼º
+	//æ‰§è¡Œå‘½ä»¤ è¿”å›æˆåŠŸå°±æ”¾å…¥å‘½ä»¤ç®¡ç†å™¨é‡Œé¢ å¦åˆ™åˆ é™¤è‡ªå·±
 	if (com->execute())
 		CommandManager::getInstance()->StoreCommand(com);
 	else
 		delete com;
 }
 
-//´¦ÀíÏûÏ¢
+//å¤„ç†æ¶ˆæ¯
 BOOL CBursterDlg::PreTranslateMessage(MSG* pMsg)
 {
 	do
@@ -948,3 +1004,48 @@ BOOL CBursterDlg::PreTranslateMessage(MSG* pMsg)
 	return CDialog::PreTranslateMessage(pMsg);
 }
 
+//è¿›ç¨‹ä¹‹é—´é€šä¿¡
+BOOL CBursterDlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
+{
+	// TODO: åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
+	CString data = (LPSTR)pCopyDataStruct->lpData;
+
+	// è·å¾—å®é™…é•¿åº¦çš„å­—ç¬¦ä¸²
+	data = data.Left(pCopyDataStruct->cbData);
+
+	if (data == _T("æ€»æ˜¯æ£€æŸ¥æ›´æ–°"))
+		m_LiveUpdateMode = INVARIABLY;
+	else if (data == _T("æ¯å‘¨æ£€æŸ¥æ›´æ–°"))
+		m_LiveUpdateMode = WEEKLY;
+	else if (data == _T("ä»ä¸æ£€æŸ¥æ›´æ–°"))
+		m_LiveUpdateMode = NEVER;
+	else //æ›´æ–°å¤±è´¥
+	{
+		if (m_isManualUpdate)
+			MessageBox(data);
+	}
+
+	// æ›´æ–°æ•°æ®
+	UpdateData(FALSE);
+
+	return CDialogEx::OnCopyData(pWnd, pCopyDataStruct);
+}
+
+
+//æ£€æŸ¥æ›´æ–°
+void CBursterDlg::On32771()
+{
+	if (!FindWindow(NULL, "å‘ç°æ›´æ–°"))
+	{
+		m_pThread = AfxBeginThread(downRemoteFile, this);
+		m_isManualUpdate = true;
+	}
+}
+
+//è®¾ç½®
+void CBursterDlg::On32775()
+{
+	// TODO: åœ¨æ­¤æ·»åŠ å‘½ä»¤å¤„ç†ç¨‹åºä»£ç 
+	CSetting set(m_LiveUpdateMode);
+	set.DoModal();
+}

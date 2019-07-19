@@ -10,8 +10,12 @@
 #include "addName.h"
 #include "SelectDlg.h"
 #include "member.h"
+#include "agreement.h"
 
 class CConfig;
+
+//下载远程文件 下载线程
+UINT downRemoteFile(LPVOID lpParam);
 
 // CBursterDlg 对话框
 class CBursterDlg : public CDialogEx
@@ -36,6 +40,7 @@ public:
 	friend class CConfig;
 
 	CWinThread*	m_pThread;
+	bool m_isManualUpdate;//是否手动更新
 	//检查更新
 	bool inspectUpdate();
 
@@ -47,6 +52,9 @@ private:
 	//赌金
 	int m_Sum;
 
+	//上一次更新时间
+	time_t m_LastTime;
+
 	CListBox* m_CurListBox;
 	CListBox* m_RedListBox;
 	CListBox* m_BlueListBox;
@@ -54,8 +62,9 @@ private:
 	CListBox* m_PaySchemeListBox;//最佳支付方案
 
 	CEdit* m_SumEdit;
-
 	CFile m_FlagFile;
+
+	UpdateMode m_LiveUpdateMode;//检查更新的方式
 
 	//当前成员列表
 	vector<stMember*> m_CurMemberVect;
@@ -114,4 +123,7 @@ public:
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnBnClickedButton11();
 	afx_msg virtual BOOL PreTranslateMessage(MSG* pMsg);
+	afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
+	afx_msg void On32771();
+	afx_msg void On32775();
 };

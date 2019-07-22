@@ -66,6 +66,9 @@
     <ClInclude Include="agreement.h">
       <Filter>协议</Filter>
     </ClInclude>
+    <ClInclude Include="SkinH.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Burster.cpp">

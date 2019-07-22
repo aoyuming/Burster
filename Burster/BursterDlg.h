@@ -40,6 +40,7 @@ public:
 	friend class CConfig;
 
 	CWinThread*	m_pThread;
+
 	bool m_isManualUpdate;//是否手动更新
 	//检查更新
 	bool inspectUpdate();
@@ -98,6 +99,12 @@ private:
 
 	//比较版本信息 
 	int compareVersion(int v1, int v2, int v3);
+
+	//界面美化
+	void UiBeautify();
+
+	BOOL CBursterDlg::EndThread();
+	BOOL CBursterDlg::ForceTerminate();
 
 // 实现
 protected:

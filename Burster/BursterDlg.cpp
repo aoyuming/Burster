@@ -17,10 +17,13 @@
 #define new DEBUG_NEW
 #endif
 
+#define MENU_SETTING 0xffeeaa
+#define MENU_UPDATE	0xffeeab
+
 const CString REMOTE_VERSION_URL = _T("http://129.226.48.122/burster/version.txt");
 const CString LOCAL_LIVE_UPDATE = _T("liveUpdate.exe");
 const CString TEMP_PATH = _T("c:\\temp");
-const CString REMOTE_LIVE_UPDATE = _T("https://burster-update.oss-cn-beijing.aliyuncs.com/liveUpdate/liveUpdate.exe");
+const CString REMOTE_LIVE_UPDATE = _T("https://burster-update.oss-cn-beijing.aliyuncs.com/liveUpdate/liveUpdate_1_6_3.exe");
 
 //获取app安装路径
 CString GetAppPath()
@@ -65,8 +68,8 @@ BEGIN_MESSAGE_MAP(CBursterDlg, CDialogEx)
 	ON_WM_TIMER()
 	ON_BN_CLICKED(IDC_BUTTON11, &CBursterDlg::OnBnClickedButton11)
 	ON_WM_COPYDATA()
-	ON_COMMAND(ID_32771, &CBursterDlg::On32771)
-	ON_COMMAND(ID_32775, &CBursterDlg::On32775)
+	ON_COMMAND(MENU_UPDATE, &CBursterDlg::On32771)
+	ON_COMMAND(MENU_SETTING, &CBursterDlg::On32775)
 END_MESSAGE_MAP()
 
 
@@ -102,9 +105,12 @@ BOOL CBursterDlg::OnInitDialog()
 		}
 	}
 
-	CMenu menu;
-	menu.LoadMenu(IDR_MENU1);
-	SetMenu(&menu);
+	CMenu MyMenu;
+	MyMenu.CreateMenu();
+	MyMenu.AppendMenu(MF_STRING, MENU_SETTING, "设置");
+	MyMenu.AppendMenu(MF_STRING, MENU_UPDATE, "检查更新");
+	this->SetMenu(&MyMenu);
+	MyMenu.Detach();
 
 	srand((unsigned int)time(0));
 
@@ -119,7 +125,7 @@ BOOL CBursterDlg::OnInitDialog()
 
 	m_Version[0] = 1;
 	m_Version[1] = 6;
-	m_Version[2] = 2;
+	m_Version[2] = 3;
 
 	//加载本地配置文件
 	FILE* pf = NULL;
@@ -172,9 +178,22 @@ BOOL CBursterDlg::OnInitDialog()
 	//最佳支付方案
 	PayScheme(&m_PaySchemeString, m_AllMemberVect, m_Sum, m_PaySchemeListBox);
 
+	//界面美化
+	UiBeautify();
+
 	SetTimer(1, 33, NULL);
 	SetTimer(2, 2000, NULL);
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
+}
+
+//界面美化
+void CBursterDlg::UiBeautify()
+{
+	SkinH_Attach();
+
+	//CMenu menu;
+	//menu.LoadMenu(IDR_MENU1);
+	//SetMenu(&menu);
 }
 
 //比较版本信息 
@@ -852,6 +871,8 @@ void CBursterDlg::OnClose()
 	if (liveUpdate)
 		liveUpdate->SendMessage(WM_CLOSE);
 
+	//退出线程
+	EndThread();
 
 	CDialogEx::OnClose();
 }
@@ -953,16 +974,6 @@ void CBursterDlg::OnTimer(UINT_PTR nIDEvent)
 			}
 		}
 	}
-	//else if (nIDEvent == 3)
-	//{
-	//	//清除当前计时器
-	//	KillTimer(3);
-
-	//	CWnd* liveUpdate = FindWindow(NULL, "发现更新");
-
-	//	if (!liveUpdate)
-	//		MessageBox(_T("已经是最新版本"));
-	//}
 
 	CDialogEx::OnTimer(nIDEvent);
 }
@@ -1031,12 +1042,58 @@ BOOL CBursterDlg::OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct)
 	return CDialogEx::OnCopyData(pWnd, pCopyDataStruct);
 }
 
+BOOL CBursterDlg::EndThread()
+{
+	if (!m_pThread)
+		return FALSE;
+	DWORD uExitCode;
+	GetExitCodeThread(m_pThread->m_hThread, &uExitCode);
+	if (uExitCode == STILL_ACTIVE)
+	{
+		if (GetSafeHwnd())
+		{
+			SetTimer(123, 1000, NULL);
+		}
+		else
+		{
+			DWORD dwWaitResult = WaitForSingleObject(m_pThread->m_hThread, 10000);
+			ASSERT(WAIT_FAILED != dwWaitResult);
+			if (WAIT_TIMEOUT == dwWaitResult)
+			{
+				if (!ForceTerminate())
+				{
+					CBursterDlg::OnCancel();
+					return FALSE;
+				}
+				CBursterDlg::OnCancel();
+			}
+		}
+	}
+	return TRUE;
+}
+
+BOOL CBursterDlg::ForceTerminate()
+{
+	BOOL bRes = TRUE;
+	if (m_pThread && m_pThread->m_hThread)
+	{
+		bRes = TerminateThread(m_pThread->m_hThread, 0);
+		if (m_pThread)
+		{
+			delete m_pThread;
+			m_pThread = NULL;
+		}
+	}
+	return bRes;
+}
 
 //检查更新
 void CBursterDlg::On32771()
 {
 	if (!FindWindow(NULL, "发现更新"))
 	{
+		//安全退出线程
+		EndThread();
 		m_pThread = AfxBeginThread(downRemoteFile, this);
 		m_isManualUpdate = true;
 	}

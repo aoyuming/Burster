@@ -79,6 +79,12 @@ private:
 	//红队表
 	vector<stMember*> m_RedMemberVect;
 
+	//上一次蓝队表
+	vector<stMember*> m_LastBlueMemberVect;
+
+	//上一次红队表
+	vector<stMember*> m_LastRedMemberVect;
+
 	//鸽子表
 	vector<stMember*> m_DoveMemberVect;
 

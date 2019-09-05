@@ -5,7 +5,10 @@ CommandManager* CommandManager::m_Instance = NULL;
 CommandManager* CommandManager::getInstance()
 {
 	if (NULL == m_Instance)
+	{
 		m_Instance = new CommandManager;
+		static CommandManager::CRelease re;
+	}
 	return m_Instance;
 }
 

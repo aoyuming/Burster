@@ -10,7 +10,6 @@ class Command
 public:
 	Command() {}
 	virtual ~Command() {}
-
 	virtual bool execute() = 0;
 	virtual void redo() = 0;
 	virtual void undo() = 0;
@@ -44,6 +43,19 @@ private:
 	~CommandManager();
 
 	static CommandManager* m_Instance;
+
+	class CRelease
+	{
+	public:
+		~CRelease()
+		{
+			if (CommandManager::m_Instance)
+			{
+				delete CommandManager::m_Instance;
+				CommandManager::m_Instance = NULL;
+			}
+		}
+	};
 
 public:
 

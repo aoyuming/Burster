@@ -124,8 +124,8 @@ BOOL CBursterDlg::OnInitDialog()
 	m_isManualUpdate = false;
 
 	m_Version[0] = 1;
-	m_Version[1] = 6;
-	m_Version[2] = 3;
+	m_Version[1] = 7;
+	m_Version[2] = 1;
 
 	//加载本地配置文件
 	FILE* pf = NULL;
@@ -144,6 +144,10 @@ BOOL CBursterDlg::OnInitDialog()
 	m_SumEdit = (CEdit*)GetDlgItem(IDC_EDIT2);
 	m_SumEdit->SetWindowText(CString(_TEXT("100")));
 	SetWindowText(ver);
+
+	((CComboBox*)GetDlgItem(IDC_COMBO2))->InsertString(0, _T("完全随机分组"));
+	((CComboBox*)GetDlgItem(IDC_COMBO2))->InsertString(1, _T("平均随机分组"));
+	((CComboBox*)GetDlgItem(IDC_COMBO2))->SetCurSel(1);
 
 	LoadConfiguration();//加载配置文件
 
@@ -314,7 +318,7 @@ bool CBursterDlg::inspectUpdate()
 		HRESULT ret = URLDownloadToFile(NULL, szUrl, localPath, 0, NULL);
 
 		if (S_OK != ret)//下载出错
-			return -1;
+			return FALSE;
 	}
 
 	//打开更新版本对话框
@@ -376,6 +380,11 @@ void CBursterDlg::SaveConfiguration()
 
 	//上一次检查的时间
 	Live.Format(_T("上一次更新时间=%d\r\n"), (int)m_LastTime);
+	fwrite(Live.GetBuffer(), Live.GetLength(), 1, pf);
+
+	//算法的选择
+	int sel = ((CComboBox*)GetDlgItem(IDC_COMBO2))->GetCurSel();
+	Live.Format(_T("分组算法=%d\r\n"), sel);
 	fwrite(Live.GetBuffer(), Live.GetLength(), 1, pf);
 
 	//全部的人数
@@ -461,6 +470,11 @@ bool CBursterDlg::LoadConfiguration()
 	//是否检查更新过
 	fscanf_s(pf, _T("上一次更新时间=%d\r\n"), &m_LastTime);
 
+	//算法的选择
+	int sel = 0;
+	fscanf_s(pf, _T("分组算法=%d\r\n"), &sel);
+	((CComboBox*)GetDlgItem(IDC_COMBO2))->SetCurSel(sel);
+
 	//全部人数
 	int allNum = 0;
 	fscanf_s(pf, "全部人数=%d", &allNum);
@@ -508,6 +522,7 @@ bool CBursterDlg::LoadConfiguration()
 			if (buf == m_CurMemberVect[j]->name)
 			{
 				m_RedMemberVect.push_back(m_CurMemberVect[j]);
+				m_LastRedMemberVect.push_back(m_CurMemberVect[j]);
 				break;
 			}
 		}
@@ -526,6 +541,7 @@ bool CBursterDlg::LoadConfiguration()
 			if (buf == m_CurMemberVect[j]->name)
 			{
 				m_BlueMemberVect.push_back(m_CurMemberVect[j]);
+				m_LastBlueMemberVect.push_back(m_CurMemberVect[j]);
 				break;
 			}
 		}
@@ -660,6 +676,8 @@ void CBursterDlg::OnBnClickedButton3_Clear()
 	m_CurMemberVect.clear();
 	m_RedMemberVect.clear();
 	m_BlueMemberVect.clear();
+	m_LastBlueMemberVect.clear();
+	m_LastRedMemberVect.clear();
 	m_Data.clear();
 	m_DoveMemberVect.clear();
 
@@ -825,7 +843,8 @@ void CBursterDlg::OnBnClickedButton4_Separate()
 	MessageBox(_TEXT("分组成功"), _TEXT("提示"), MB_OK | MB_ICONASTERISK);
 
 	//创建分组命令
-	GroupingCommand* com = new GroupingCommand(this);
+	int sel = ((CComboBox*)GetDlgItem(IDC_COMBO2))->GetCurSel();
+	GroupingCommand* com = new GroupingCommand(this, (GroupingCommand::GroupingArith)sel);
 
 	//执行命令 返回成功就放入命令管理器里面 否则删除自己
 	if (com->execute())

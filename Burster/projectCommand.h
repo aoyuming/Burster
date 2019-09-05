@@ -155,9 +155,13 @@ private:
 
 	vector<stMember*> m_CurMemberVect_Undo_Temp;
 	vector<stMember*> m_DoveMemberVect_Undo_Temp;
+	vector<stMember*> m_LastRedMemberVect_Undo_Temp;
+	vector<stMember*> m_LastBlueMemberVect_Undo_Temp;
 
 	vector<stMember*> m_CurMemberVect_Redo_Temp;
 	vector<stMember*> m_DoveMemberVect_Redo_Temp;
+	vector<stMember*> m_LastRedMemberVect_Redo_Temp;
+	vector<stMember*> m_LastBlueMemberVect_Redo_Temp;
 public:
 
 	EraseCommand(int eraseIdx, CBursterDlg* pDlg)
@@ -167,6 +171,8 @@ public:
 	{
 		m_CurMemberVect_Undo_Temp = _MD->m_CurMemberVect;
 		m_DoveMemberVect_Undo_Temp = _MD->m_DoveMemberVect;
+		m_LastRedMemberVect_Undo_Temp = _MD->m_LastRedMemberVect;
+		m_LastBlueMemberVect_Undo_Temp = _MD->m_LastBlueMemberVect;
 	}
 
 	virtual	~EraseCommand()
@@ -191,8 +197,13 @@ public:
 			}
 		}
 
+		_MD->m_LastBlueMemberVect.clear();
+		_MD->m_LastRedMemberVect.clear();
+
 		m_CurMemberVect_Redo_Temp = _MD->m_CurMemberVect;
 		m_DoveMemberVect_Redo_Temp = _MD->m_DoveMemberVect;
+		m_LastRedMemberVect_Redo_Temp = _MD->m_LastRedMemberVect;
+		m_LastBlueMemberVect_Redo_Temp = _MD->m_LastBlueMemberVect;
 		return true;
 	}
 
@@ -201,6 +212,8 @@ public:
 	{
 		_MD->m_CurMemberVect = m_CurMemberVect_Redo_Temp;
 		_MD->m_DoveMemberVect = m_DoveMemberVect_Redo_Temp;
+		_MD->m_LastRedMemberVect = m_LastRedMemberVect_Redo_Temp;
+		_MD->m_LastBlueMemberVect = m_LastBlueMemberVect_Redo_Temp;
 
 		_MD->m_CurListBox->ResetContent();
 		for (int i = 0; i < (int)_MD->m_CurMemberVect.size(); ++i)
@@ -212,6 +225,8 @@ public:
 	{
 		_MD->m_CurMemberVect = m_CurMemberVect_Undo_Temp;
 		_MD->m_DoveMemberVect = m_DoveMemberVect_Undo_Temp;
+		_MD->m_LastRedMemberVect = m_LastRedMemberVect_Undo_Temp;
+		_MD->m_LastBlueMemberVect = m_LastBlueMemberVect_Undo_Temp;
 
 		_MD->m_CurListBox->ResetContent();
 		for (int i = 0; i < (int)_MD->m_CurMemberVect.size(); ++i)
@@ -222,31 +237,46 @@ public:
 //分组命令
 class GroupingCommand : public Command
 {
+public:
+
+	//分组算法
+	enum GroupingArith { ENTIRELY, AVERAGE};
+
 private:
 
+	GroupingArith m_Arith;//分组算法
 	CBursterDlg* m_MainDlg;//主窗口类
 
 	//执行命令前的数据
 	vector<stMember*> m_CurMemberVect_Undo_Temp;
 	vector<stMember*> m_BlueMemberVect_Undo_Temp;
 	vector<stMember*> m_RedMemberVect_Undo_Temp;
+	vector<stMember*> m_LastBlueMemberVect_Undo_Temp;
+	vector<stMember*> m_LastRedMemberVect_Undo_Temp;
 	vector<stData>   m_Data_Undo_Temp;
 
 	//执行命令后的数据
 	vector<stMember*> m_CurMemberVect_Redo_Temp;
 	vector<stMember*> m_BlueMemberVect_Redo_Temp;
 	vector<stMember*> m_RedMemberVect_Redo_Temp;
+	vector<stMember*> m_LastBlueMemberVect_Redo_Temp;
+	vector<stMember*> m_LastRedMemberVect_Redo_Temp;
 	vector<stData>   m_Data_Redo_Temp;
 
 public:
 
-	GroupingCommand(CBursterDlg* pDlg)
+
+
+	GroupingCommand(CBursterDlg* pDlg, GroupingArith arith)
 		:
-		m_MainDlg(pDlg)
+		m_MainDlg(pDlg),
+		m_Arith(arith)
 	{
 		m_CurMemberVect_Undo_Temp = _MD->m_CurMemberVect;
 		m_BlueMemberVect_Undo_Temp = _MD->m_BlueMemberVect;
 		m_RedMemberVect_Undo_Temp = _MD->m_RedMemberVect;
+		m_LastBlueMemberVect_Undo_Temp = _MD->m_LastBlueMemberVect;
+		m_LastRedMemberVect_Undo_Temp = _MD->m_LastRedMemberVect;
 		m_Data_Undo_Temp = _MD->m_Data;
 	}
 
@@ -255,17 +285,15 @@ public:
 
 	}
 
-	//执行命令
-	virtual bool execute()
+	//完全随机分组
+	void entirelyRandomGrouping()
 	{
 		//分组
 		vector<stMember*> temp = _MD->m_CurMemberVect;
-		_MD->m_RedListBox->ResetContent();
-		_MD->m_BlueListBox->ResetContent();
-
 		_MD->m_RedMemberVect.clear();
 		_MD->m_BlueMemberVect.clear();
-
+		_MD->m_LastRedMemberVect.clear();
+		_MD->m_LastBlueMemberVect.clear();
 		bool flag = false;
 
 		while (temp.size() != 0)
@@ -274,19 +302,99 @@ public:
 
 			if (flag)
 			{
+				_MD->m_LastRedMemberVect.push_back(temp[rd]);
 				_MD->m_RedMemberVect.push_back(temp[rd]);
 				_MD->m_RedListBox->AddString(temp[rd]->name);
 				flag = false;
 			}
 			else
 			{
+				_MD->m_LastBlueMemberVect.push_back(temp[rd]);
 				_MD->m_BlueMemberVect.push_back(temp[rd]);
 				_MD->m_BlueListBox->AddString(temp[rd]->name);
 				flag = true;
 			}
 			temp.erase(temp.begin() + rd);
 		}
+	}
 
+	//平均随机分组
+	void averageRandomGrouping()
+	{
+		if (_MD->m_LastRedMemberVect.size() != _MD->m_LastBlueMemberVect.size() 
+			|| _MD->m_LastRedMemberVect.size() == 0
+			|| _MD->m_LastBlueMemberVect.size() == 0)
+		{
+			entirelyRandomGrouping();
+			return;
+		}
+		
+		//新增的成员
+		vector<stMember*> newMember;
+		for (int i = 0; i < (int)_MD->m_CurMemberVect.size(); ++i)
+		{
+			if (-1 != IsMemberInVect_index(*_MD->m_CurMemberVect[i], _MD->m_LastBlueMemberVect))
+				continue;
+			if (-1 != IsMemberInVect_index(*_MD->m_CurMemberVect[i], _MD->m_LastRedMemberVect))
+				continue;
+
+			newMember.push_back(_MD->m_CurMemberVect[i]);
+		}
+
+		//分组
+		vector<int> randVect;
+		int cout = (int)_MD->m_LastRedMemberVect.size() / 2;
+		for (int i = 0; i < cout; ++i)
+		{
+		FALG:
+			int rd = rand() % _MD->m_LastRedMemberVect.size();
+			for (int j = 0; j < (int)randVect.size(); ++j)
+			{
+				if (rd == randVect[j])
+					goto FALG;
+			}
+			
+			stMember* temp = _MD->m_LastRedMemberVect[rd];
+			_MD->m_LastRedMemberVect[rd] = _MD->m_LastBlueMemberVect[rd];
+			_MD->m_LastBlueMemberVect[rd] = temp;
+			randVect.push_back(rd);
+		}
+
+		//新增的成员分组
+		for (int i = 0; i < (int)newMember.size(); ++i)
+		{
+			if (i % 2 == 0)
+				_MD->m_LastRedMemberVect.push_back(newMember[i]);
+			else
+				_MD->m_LastBlueMemberVect.push_back(newMember[i]);
+		}
+
+		_MD->m_RedMemberVect = _MD->m_LastRedMemberVect;
+		_MD->m_BlueMemberVect = _MD->m_LastBlueMemberVect;
+		for (int i = 0; i < (int)_MD->m_RedMemberVect.size(); ++i)
+			_MD->m_RedListBox->AddString(_MD->m_RedMemberVect[i]->name);
+		for (int i = 0; i < (int)_MD->m_BlueMemberVect.size(); ++i)
+			_MD->m_BlueListBox->AddString(_MD->m_BlueMemberVect[i]->name);
+	}
+
+	//执行命令
+	virtual bool execute()
+	{
+		_MD->m_RedListBox->ResetContent();
+		_MD->m_BlueListBox->ResetContent();
+
+		if (_MD->m_RedMemberVect.size() != 0 && _MD->m_BlueMemberVect.size() != 0)
+		{
+			_MD->m_LastRedMemberVect = _MD->m_RedMemberVect;
+			_MD->m_LastBlueMemberVect = _MD->m_BlueMemberVect;
+		}
+
+		//完全随机分组
+		if (m_Arith == ENTIRELY)
+			entirelyRandomGrouping();
+		else if (m_Arith == AVERAGE)//平均随机分组
+			averageRandomGrouping();
+		
 		CTime time = CTime::GetCurrentTime(); ///构造CTime对象  
 		int m_nYear = time.GetYear(); ///年  
 		int m_nMonth = time.GetMonth(); ///月  
@@ -313,6 +421,8 @@ public:
 		m_CurMemberVect_Redo_Temp = _MD->m_CurMemberVect;
 		m_RedMemberVect_Redo_Temp = _MD->m_RedMemberVect;
 		m_BlueMemberVect_Redo_Temp = _MD->m_BlueMemberVect;
+		m_LastRedMemberVect_Redo_Temp = _MD->m_LastRedMemberVect;
+		m_LastBlueMemberVect_Redo_Temp = _MD->m_LastBlueMemberVect;
 		m_Data_Redo_Temp = _MD->m_Data;
 		return true;
 	}
@@ -323,6 +433,8 @@ public:
 		_MD->m_CurMemberVect = m_CurMemberVect_Redo_Temp;
 		_MD->m_RedMemberVect = m_RedMemberVect_Redo_Temp;
 		_MD->m_BlueMemberVect = m_BlueMemberVect_Redo_Temp;
+		_MD->m_LastRedMemberVect = m_LastRedMemberVect_Redo_Temp;
+		_MD->m_LastBlueMemberVect = m_LastBlueMemberVect_Redo_Temp;
 		_MD->m_Data = m_Data_Redo_Temp;
 
 		_MD->m_BlueListBox->ResetContent();
@@ -341,6 +453,8 @@ public:
 		_MD->m_CurMemberVect = m_CurMemberVect_Undo_Temp;
 		_MD->m_RedMemberVect = m_RedMemberVect_Undo_Temp;
 		_MD->m_BlueMemberVect = m_BlueMemberVect_Undo_Temp;
+		_MD->m_LastRedMemberVect = m_LastRedMemberVect_Undo_Temp;
+		_MD->m_LastBlueMemberVect = m_LastBlueMemberVect_Undo_Temp;
 		_MD->m_Data = m_Data_Undo_Temp;
 
 		_MD->m_BlueListBox->ResetContent();
@@ -367,6 +481,8 @@ private:
 	vector<stMember> m_AllMemberVect_Undo_Temp;
 	vector<stMember*> m_BlueMemberVect_Undo_Temp;
 	vector<stMember*> m_RedMemberVect_Undo_Temp;
+	vector<stMember*> m_LastBlueMemberVect_Undo_Temp;
+	vector<stMember*> m_LastRedMemberVect_Undo_Temp;
 	vector<stData>    m_Data_Undo_Temp;
 
 	//执行命令后的数据
@@ -374,6 +490,8 @@ private:
 	vector<stMember> m_AllMemberVect_Redo_Temp;
 	vector<stMember*> m_BlueMemberVect_Redo_Temp;
 	vector<stMember*> m_RedMemberVect_Redo_Temp;
+	vector<stMember*> m_LastBlueMemberVect_Redo_Temp;
+	vector<stMember*> m_LastRedMemberVect_Redo_Temp;
 	vector<stData>    m_Data_Redo_Temp;
 
 public:
@@ -389,6 +507,8 @@ public:
 			m_AllMemberVect_Undo_Temp.push_back(*_MD->m_AllMemberVect[i]);
 		}
 
+		m_LastRedMemberVect_Undo_Temp = _MD->m_LastBlueMemberVect;
+		m_LastBlueMemberVect_Undo_Temp = _MD->m_LastRedMemberVect;
 		m_BlueMemberVect_Undo_Temp = _MD->m_BlueMemberVect;
 		m_RedMemberVect_Undo_Temp = _MD->m_RedMemberVect;
 		m_Data_Undo_Temp = _MD->m_Data;
@@ -449,6 +569,8 @@ public:
 				_MD->m_Data[_MD->m_Data.size() - 1].blue.push_back(*_MD->m_BlueMemberVect[i]);
 		}
 
+		_MD->m_LastBlueMemberVect = _MD->m_BlueMemberVect;
+		_MD->m_LastRedMemberVect = _MD->m_RedMemberVect;
 		_MD->m_BlueMemberVect.clear();
 		_MD->m_RedMemberVect.clear();
 
@@ -461,6 +583,9 @@ public:
 		m_BlueMemberVect_Redo_Temp = _MD->m_BlueMemberVect;
 		m_PaySchemeString_Redo_Temp = _MD->m_PaySchemeString;
 		m_Data_Redo_Temp = _MD->m_Data;
+		m_LastRedMemberVect_Redo_Temp = _MD->m_LastBlueMemberVect;
+		m_LastBlueMemberVect_Redo_Temp = _MD->m_LastRedMemberVect;
+
 		return true;
 	}
 
@@ -475,6 +600,8 @@ public:
 
 		_MD->m_RedMemberVect = m_RedMemberVect_Redo_Temp;
 		_MD->m_BlueMemberVect = m_BlueMemberVect_Redo_Temp;
+		_MD->m_LastBlueMemberVect = m_LastBlueMemberVect_Redo_Temp;
+		_MD->m_LastRedMemberVect = m_LastRedMemberVect_Redo_Temp;
 		_MD->m_Data = m_Data_Redo_Temp;
 		_MD->m_PaySchemeString = m_PaySchemeString_Redo_Temp;
 
@@ -511,6 +638,8 @@ public:
 			_MD->m_AllMemberVect[i]->name = m_AllMemberVect_Undo_Temp[i].name;
 		}
 
+		_MD->m_LastRedMemberVect = m_LastRedMemberVect_Undo_Temp;
+		_MD->m_LastBlueMemberVect = m_LastBlueMemberVect_Undo_Temp;
 		_MD->m_RedMemberVect = m_RedMemberVect_Undo_Temp;
 		_MD->m_BlueMemberVect = m_BlueMemberVect_Undo_Temp;
 		_MD->m_Data = m_Data_Undo_Temp;

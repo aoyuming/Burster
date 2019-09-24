@@ -265,8 +265,6 @@ private:
 
 public:
 
-
-
 	GroupingCommand(CBursterDlg* pDlg, GroupingArith arith)
 		:
 		m_MainDlg(pDlg),
@@ -343,15 +341,15 @@ public:
 
 		//分组
 		vector<int> randVect;
-		int cout = (int)_MD->m_LastRedMemberVect.size() / 2;
-		for (int i = 0; i < cout; ++i)
+		int count = (int)_MD->m_LastRedMemberVect.size() / 2;
+		for (int i = 0; i < count; ++i)
 		{
-		FALG:
+		FLAG:
 			int rd = rand() % _MD->m_LastRedMemberVect.size();
 			for (int j = 0; j < (int)randVect.size(); ++j)
 			{
 				if (rd == randVect[j])
-					goto FALG;
+					goto FLAG;
 			}
 			
 			stMember* temp = _MD->m_LastRedMemberVect[rd];
@@ -361,12 +359,22 @@ public:
 		}
 
 		//新增的成员分组
-		for (int i = 0; i < (int)newMember.size(); ++i)
+		bool flag = false;
+		while (newMember.size() != 0)
 		{
-			if (i % 2 == 0)
-				_MD->m_LastRedMemberVect.push_back(newMember[i]);
+			int rd = rand() % newMember.size();
+
+			if (flag)
+			{
+				_MD->m_LastRedMemberVect.push_back(newMember[rd]);
+				flag = false;
+			}
 			else
-				_MD->m_LastBlueMemberVect.push_back(newMember[i]);
+			{
+				_MD->m_LastBlueMemberVect.push_back(newMember[rd]);
+				flag = true;
+			}
+			newMember.erase(newMember.begin() + rd);
 		}
 
 		_MD->m_RedMemberVect = _MD->m_LastRedMemberVect;

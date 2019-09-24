@@ -110,6 +110,7 @@
     <ClInclude Include="Command.h" />
     <ClInclude Include="Config.h" />
     <ClInclude Include="EditMember.h" />
+    <ClInclude Include="GroupingResult.h" />
     <ClInclude Include="SelectDlg.h" />
     <ClInclude Include="member.h" />
     <ClInclude Include="projectCommand.h" />
@@ -127,6 +128,7 @@
     <ClCompile Include="Command.cpp" />
     <ClCompile Include="Config.cpp" />
     <ClCompile Include="EditMenber.cpp" />
+    <ClCompile Include="GroupingResult.cpp" />
     <ClCompile Include="member.cpp" />
     <ClCompile Include="SelectDlg.cpp" />
     <ClCompile Include="Setting.cpp" />

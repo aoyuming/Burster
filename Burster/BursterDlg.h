@@ -11,6 +11,7 @@
 #include "SelectDlg.h"
 #include "member.h"
 #include "agreement.h"
+#include "afxwin.h"
 
 class CConfig;
 
@@ -109,6 +110,9 @@ private:
 	//界面美化
 	void UiBeautify();
 
+	//更新最多分为几组
+	void updateMaxGroup();
+
 	BOOL CBursterDlg::EndThread();
 	BOOL CBursterDlg::ForceTerminate();
 
@@ -139,4 +143,8 @@ public:
 	afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
 	afx_msg void On32771();
 	afx_msg void On32775();
+	afx_msg void On32776();
+	virtual void PostNcDestroy();
+	CStatic m_DaiFenzu;
+	CStatic m_All;
 };

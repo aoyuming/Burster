@@ -69,6 +69,9 @@
     <ClInclude Include="SkinH.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="GroupingResult.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Burster.cpp">
@@ -102,6 +105,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Setting.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="GroupingResult.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

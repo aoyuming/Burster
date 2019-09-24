@@ -11,6 +11,7 @@
 #include "VersionInfo.h"
 #include <time.h>
 #include "Setting.h"
+#include "GroupingResult.h"
 
 
 #ifdef _DEBUG
@@ -19,6 +20,8 @@
 
 #define MENU_SETTING 0xffeeaa
 #define MENU_UPDATE	0xffeeab
+#define MENU_HELP	0xffeeae
+
 
 const CString REMOTE_VERSION_URL = _T("http://129.226.48.122/burster/version.txt");
 const CString LOCAL_LIVE_UPDATE = _T("liveUpdate.exe");
@@ -48,6 +51,8 @@ CBursterDlg::CBursterDlg(CWnd* pParent /*=NULL*/)
 void CBursterDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
+	DDX_Control(pDX, IDC_STATIC_1, m_DaiFenzu);
+	DDX_Control(pDX, IDC_STATIC_2, m_All);
 }
 
 BEGIN_MESSAGE_MAP(CBursterDlg, CDialogEx)
@@ -70,6 +75,7 @@ BEGIN_MESSAGE_MAP(CBursterDlg, CDialogEx)
 	ON_WM_COPYDATA()
 	ON_COMMAND(MENU_UPDATE, &CBursterDlg::On32771)
 	ON_COMMAND(MENU_SETTING, &CBursterDlg::On32775)
+	ON_COMMAND(MENU_HELP, &CBursterDlg::On32776)
 END_MESSAGE_MAP()
 
 
@@ -109,6 +115,7 @@ BOOL CBursterDlg::OnInitDialog()
 	MyMenu.CreateMenu();
 	MyMenu.AppendMenu(MF_STRING, MENU_SETTING, "设置");
 	MyMenu.AppendMenu(MF_STRING, MENU_UPDATE, "检查更新");
+	MyMenu.AppendMenu(MF_STRING, MENU_HELP, "算法说明");
 	this->SetMenu(&MyMenu);
 	MyMenu.Detach();
 
@@ -124,8 +131,8 @@ BOOL CBursterDlg::OnInitDialog()
 	m_isManualUpdate = false;
 
 	m_Version[0] = 1;
-	m_Version[1] = 7;
-	m_Version[2] = 1;
+	m_Version[1] = 8;
+	m_Version[2] = 0;
 
 	//加载本地配置文件
 	FILE* pf = NULL;
@@ -145,11 +152,13 @@ BOOL CBursterDlg::OnInitDialog()
 	m_SumEdit->SetWindowText(CString(_TEXT("100")));
 	SetWindowText(ver);
 
-	((CComboBox*)GetDlgItem(IDC_COMBO2))->InsertString(0, _T("完全随机分组"));
-	((CComboBox*)GetDlgItem(IDC_COMBO2))->InsertString(1, _T("平均随机分组"));
+	((CComboBox*)GetDlgItem(IDC_COMBO2))->InsertString(0, _T("随机分组"));
+	((CComboBox*)GetDlgItem(IDC_COMBO2))->InsertString(1, _T("平均分组"));
 	((CComboBox*)GetDlgItem(IDC_COMBO2))->SetCurSel(1);
 
 	LoadConfiguration();//加载配置文件
+						
+	updateMaxGroup();//设置最多分组
 
 	m_CurListBox = (CListBox*)GetDlgItem(IDC_LIST2);
 	m_RedListBox = (CListBox*)GetDlgItem(IDC_LIST4);
@@ -200,11 +209,42 @@ void CBursterDlg::UiBeautify()
 	//SetMenu(&menu);
 }
 
+//更新最多分为几组
+void CBursterDlg::updateMaxGroup()
+{
+	CComboBox* box = (CComboBox*)(GetDlgItem(IDC_COMBO3));
+	int curSel = box->GetCurSel();
+	int allNum = m_CurMemberVect.size();
+	
+	box->ResetContent();
+
+	if (allNum <= 2)
+	{
+		CString str;
+		str.Format("%d组", 2);
+		box->InsertString(0, str);
+		box->SetCurSel(0);
+	}
+	else
+	{
+		for (int i = 2; i <= allNum; ++i)
+		{
+			CString str;
+			str.Format("%d组", i);
+			box->InsertString(i - 2, str);
+		}
+		if (curSel >= allNum || curSel < 0)
+			box->SetCurSel(0);
+		else
+			box->SetCurSel(curSel);
+	}
+}
+
 //比较版本信息 
 int CBursterDlg::compareVersion(int v1, int v2, int v3)
 {
-	int version1 = m_Version[0] * 100 + m_Version[1] * 10 + m_Version[2];
-	int version2 = v1 * 100 + v2 * 10 + v3;
+	int version1 = m_Version[0] * 100000 + m_Version[1] * 100 + m_Version[2];
+	int version2 = v1 * 100000 + v2 * 100 + v3;
 	return version1 - version2;
 }
 
@@ -471,7 +511,7 @@ bool CBursterDlg::LoadConfiguration()
 	fscanf_s(pf, _T("上一次更新时间=%d\r\n"), &m_LastTime);
 
 	//算法的选择
-	int sel = 0;
+	int sel = 1;
 	fscanf_s(pf, _T("分组算法=%d\r\n"), &sel);
 	((CComboBox*)GetDlgItem(IDC_COMBO2))->SetCurSel(sel);
 
@@ -683,6 +723,8 @@ void CBursterDlg::OnBnClickedButton3_Clear()
 
 	//释放
 	CommandManager::getInstance()->release();
+
+	updateMaxGroup();
 }
 
 //保存
@@ -827,30 +869,95 @@ bool CBursterDlg::Save(const char* fn, const char* rb)
 //分组
 void CBursterDlg::OnBnClickedButton4_Separate()
 {
-	// TODO: 在此添加控件通知处理程序代码
-	if (m_CurMemberVect.size() % 2 != 0 || m_CurMemberVect.size() < 2)
+	CComboBox* box = (CComboBox*)(GetDlgItem(IDC_COMBO3));
+	int curSel = box->GetCurSel();
+	if (curSel == 0)
 	{
-		MessageBox(_TEXT("人数不平均"), _TEXT("提示"), MB_OK | MB_ICONERROR);
-		return;
-	}
-
-	if (m_RedMemberVect.size() > 0 || m_BlueMemberVect.size() > 0)
-	{
-		if (MessageBox(_TEXT("是否重新分组"), _TEXT("提示"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+		// TODO: 在此添加控件通知处理程序代码
+		if (m_CurMemberVect.size() % 2 != 0 || m_CurMemberVect.size() < 2)
+		{
+			MessageBox(_TEXT("人数不平均"), _TEXT("提示"), MB_OK | MB_ICONERROR);
 			return;
+		}
+
+		if (m_RedMemberVect.size() > 0 || m_BlueMemberVect.size() > 0)
+		{
+			if (MessageBox(_TEXT("是否重新分组"), _TEXT("提示"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+				return;
+		}
+
+		MessageBox(_TEXT("分组成功"), _TEXT("提示"), MB_OK | MB_ICONASTERISK);
+
+		//创建分组命令
+		int sel = ((CComboBox*)GetDlgItem(IDC_COMBO2))->GetCurSel();
+		GroupingCommand* com = new GroupingCommand(this, (GroupingCommand::GroupingArith)sel);
+
+		//执行命令 返回成功就放入命令管理器里面 否则删除自己
+		if (com->execute())
+			CommandManager::getInstance()->StoreCommand(com);
+		else
+			delete com;
 	}
+	else//分为其他组
+	{
+		vector<CString>* pVect = new vector<CString>[curSel + 2];
+		vector<stMember*> pMember = m_CurMemberVect;
+		int count = pMember.size() / (curSel + 2);
 
-	MessageBox(_TEXT("分组成功"), _TEXT("提示"), MB_OK | MB_ICONASTERISK);
+		if (pMember.size() % (curSel + 2) != 0)
+		{
+			CString temp = "";
+			temp.Format("%d人 / %d组 将无法平均分配每一队，是否任然继续分组？", pMember.size(), (curSel + 2));
+			if (MessageBox(temp, _TEXT("提示"), MB_YESNO | MB_ICONQUESTION) == IDNO)
+				return;
+		}
 
-	//创建分组命令
-	int sel = ((CComboBox*)GetDlgItem(IDC_COMBO2))->GetCurSel();
-	GroupingCommand* com = new GroupingCommand(this, (GroupingCommand::GroupingArith)sel);
+		for (int i = 0; i < curSel + 2; ++i)
+		{
+			for (int j = 0; j < count; ++j)
+			{
+				if (pMember.size() <= 0)
+					break;
 
-	//执行命令 返回成功就放入命令管理器里面 否则删除自己
-	if (com->execute())
-		CommandManager::getInstance()->StoreCommand(com);
-	else
-		delete com;
+				int rd = rand() % pMember.size();
+				pVect[i].push_back(pMember[rd]->name);
+				pMember.erase(pMember.begin() + rd);
+			}
+		}
+
+		if (pMember.size() != 0)
+		{
+			for (int i = 0; i < pMember.size(); ++i)
+				pVect[i].push_back(pMember[i]->name);
+			pMember.clear();
+		}
+
+		CString allStr = "";
+		for (int i = 0; i < curSel + 2; ++i)
+		{
+			CString temp;
+			temp.Format("第%d组: \r\n", i);
+			allStr += temp;
+
+			for (int j = 0; j < pVect[i].size(); ++j)
+				allStr += "【" + pVect[i][j] + "】" + "\r\n";
+			allStr += "\r\n";
+		}
+
+		//保存文件
+		CString outputPath = "C://Users//Administrator//Desktop//分组人员信息.txt";
+		FILE* pf = NULL;
+		fopen_s(&pf, outputPath, "wb");
+		if (!pf)
+			return;
+
+		fwrite(allStr.GetBuffer(), allStr.GetLength(), 1, pf);
+		fclose(pf);
+
+		//显示出来
+		CGroupingResult gr(this, allStr);
+		gr.DoModal();
+	}
 }
 
 //改变金钱
@@ -965,8 +1072,25 @@ void CBursterDlg::OnTimer(UINT_PTR nIDEvent)
 		CButton* red = (CButton*)GetDlgItem(IDC_BUTTON7);
 		CButton* blue = (CButton*)GetDlgItem(IDC_BUTTON5);
 
-		red->EnableWindow(m_RedMemberVect.size() > 0);
-		blue->EnableWindow(m_BlueMemberVect.size() > 0);
+		CComboBox* box = (CComboBox*)(GetDlgItem(IDC_COMBO3));
+		int curSel = box->GetCurSel();
+		red->EnableWindow(m_RedMemberVect.size() > 0 && curSel == 0);
+		blue->EnableWindow(m_BlueMemberVect.size() > 0 && curSel == 0);
+
+		//人数发生变化 更新
+		static int allsize = 0;
+		if (m_CurListBox->GetCount() != allsize)
+		{
+			allsize = m_CurListBox->GetCount();
+			updateMaxGroup();
+			CString str1 = "待分组列表", str2 = "历史选手输赢信息";
+			str1.Format("待分组列表(%d)", allsize);
+			str2.Format("历史选手输赢信息(%d)", m_AllMemberVect.size());
+
+			m_DaiFenzu.SetWindowText(str1);
+			m_All.SetWindowText(str2);
+			UpdateData();
+		}
 	}
 	else if (nIDEvent == 2)//检查更新
 	{
@@ -1018,16 +1142,23 @@ BOOL CBursterDlg::PreTranslateMessage(MSG* pMsg)
 		if (pMsg->message != WM_KEYDOWN)
 			break;
 
-		const SHORT l_cnKeyState = 0x8000;
-		if (l_cnKeyState != (GetKeyState(VK_CONTROL) & l_cnKeyState))
+		//esc键按下
+		if (pMsg->wParam == VK_ESCAPE)
+		{
+			OnClose();
 			break;
+		}
 
-		// do ctrl+Z
-		if (pMsg->wParam == 'Z')
-			CommandManager::getInstance()->undo();
-		// do ctrl+Y
-		else if (pMsg->wParam == 'Y')
-			CommandManager::getInstance()->redo();
+		//const SHORT l_cnKeyState = 0x8000;
+		//if (l_cnKeyState != (GetKeyState(VK_CONTROL) & l_cnKeyState))
+		//	break;
+
+		//// do ctrl+Z
+		//if (pMsg->wParam == 'Z')
+		//	CommandManager::getInstance()->undo();
+		//// do ctrl+Y
+		//else if (pMsg->wParam == 'Y')
+		//	CommandManager::getInstance()->redo();
 
 	} while (FALSE);
 
@@ -1125,3 +1256,21 @@ void CBursterDlg::On32775()
 	CSetting set(m_LiveUpdateMode);
 	set.DoModal();
 }
+
+
+//分组算法说明
+void CBursterDlg::On32776()
+{
+	CString str = "完全随机分组：总人数随机分成两队\r\n平均随机分组：记录上一次分组的信息，每一队随机找出 （总人数 / 4）个人和另一外队互换, 这样相对于每个人来说每次分组换的人都是最优的";
+	MessageBox(str, _T("分组说明"), MB_OK);
+}
+
+
+void CBursterDlg::PostNcDestroy()
+{
+	// TODO: 在此添加专用代码和/或调用基类
+
+	CDialogEx::PostNcDestroy();
+}
+
+

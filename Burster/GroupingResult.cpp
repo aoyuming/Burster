@@ -62,6 +62,7 @@ BOOL CGroupingResult::OnInitDialog()
 	CDialogEx::OnInitDialog();
 
 	m_Edit.SetWindowText(m_Data);
+	m_Edit.PostMessage(EM_SETSEL, 0, 0);
 	//m_Edit.SetSel(-1, -1);
 	//m_Edit.SetFocus();
 

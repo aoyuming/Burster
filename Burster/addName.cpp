@@ -63,7 +63,7 @@ void addName::OnEnUpdateEdit1()
 	// 同时将 ENM_UPDATE 标志“或”运算到 lParam 掩码中。
 
 	// TODO:  在此添加控件通知处理程序代码
-	CString name;
+	/*CString name;
 	((CEdit*)GetDlgItem(IDC_EDIT1))->GetWindowText(name);
 	if (name.GetLength() > 8)
 	{
@@ -71,5 +71,5 @@ void addName::OnEnUpdateEdit1()
 		int drLen = temp.GetLength();
 		((CEdit*)GetDlgItem(IDC_EDIT1))->SetWindowText(name.Left(8));
 		((CEdit*)GetDlgItem(IDC_EDIT1))->SetSel(drLen, drLen, TRUE);
-	}
+	}*/
 }

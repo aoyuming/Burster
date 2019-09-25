@@ -340,22 +340,30 @@ public:
 		}
 
 		//分组
-		vector<int> randVect;
+		vector<int> redRandVect, blueRandVect;
 		int count = (int)_MD->m_LastRedMemberVect.size() / 2;
 		for (int i = 0; i < count; ++i)
 		{
-		FLAG:
-			int rd = rand() % _MD->m_LastRedMemberVect.size();
-			for (int j = 0; j < (int)randVect.size(); ++j)
+		RED:
+			int redIndex = rand() % _MD->m_LastRedMemberVect.size();
+			for (int j = 0; j < (int)redRandVect.size(); ++j)
 			{
-				if (rd == randVect[j])
-					goto FLAG;
+				if (redIndex == redRandVect[j])
+					goto RED;
+			}
+		BLUE:
+			int blueIndex = rand() % _MD->m_LastBlueMemberVect.size();
+			for (int j = 0; j < (int)blueRandVect.size(); ++j)
+			{
+				if (blueIndex == blueRandVect[j])
+					goto BLUE;
 			}
 			
-			stMember* temp = _MD->m_LastRedMemberVect[rd];
-			_MD->m_LastRedMemberVect[rd] = _MD->m_LastBlueMemberVect[rd];
-			_MD->m_LastBlueMemberVect[rd] = temp;
-			randVect.push_back(rd);
+			stMember* temp = _MD->m_LastRedMemberVect[redIndex];
+			_MD->m_LastRedMemberVect[redIndex] = _MD->m_LastBlueMemberVect[blueIndex];
+			_MD->m_LastBlueMemberVect[blueIndex] = temp;
+			redRandVect.push_back(redIndex);
+			blueRandVect.push_back(blueIndex);
 		}
 
 		//新增的成员分组

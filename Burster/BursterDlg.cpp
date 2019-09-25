@@ -152,8 +152,8 @@ BOOL CBursterDlg::OnInitDialog()
 	m_SumEdit->SetWindowText(CString(_TEXT("100")));
 	SetWindowText(ver);
 
-	((CComboBox*)GetDlgItem(IDC_COMBO2))->InsertString(0, _T("随机分组"));
-	((CComboBox*)GetDlgItem(IDC_COMBO2))->InsertString(1, _T("平均分组"));
+	((CComboBox*)GetDlgItem(IDC_COMBO2))->InsertString(0, _T("完全随机"));
+	((CComboBox*)GetDlgItem(IDC_COMBO2))->InsertString(1, _T("相对平均"));
 	((CComboBox*)GetDlgItem(IDC_COMBO2))->SetCurSel(1);
 
 	LoadConfiguration();//加载配置文件
@@ -936,11 +936,11 @@ void CBursterDlg::OnBnClickedButton4_Separate()
 		for (int i = 0; i < curSel + 2; ++i)
 		{
 			CString temp;
-			temp.Format("第%d组: \r\n", i);
+			temp.Format("第%d组: \r\n", i + 1);
 			allStr += temp;
 
 			for (int j = 0; j < pVect[i].size(); ++j)
-				allStr += "【" + pVect[i][j] + "】" + "\r\n";
+				allStr += pVect[i][j] + "\r\n";
 			allStr += "\r\n";
 		}
 
@@ -1078,12 +1078,12 @@ void CBursterDlg::OnTimer(UINT_PTR nIDEvent)
 		blue->EnableWindow(m_BlueMemberVect.size() > 0 && curSel == 0);
 
 		//人数发生变化 更新
-		static int allsize = 0;
+		static int allsize = -1;
 		if (m_CurListBox->GetCount() != allsize)
 		{
 			allsize = m_CurListBox->GetCount();
 			updateMaxGroup();
-			CString str1 = "待分组列表", str2 = "历史选手输赢信息";
+			CString str1, str2;
 			str1.Format("待分组列表(%d)", allsize);
 			str2.Format("历史选手输赢信息(%d)", m_AllMemberVect.size());
 
@@ -1261,7 +1261,7 @@ void CBursterDlg::On32775()
 //分组算法说明
 void CBursterDlg::On32776()
 {
-	CString str = "完全随机分组：总人数随机分成两队\r\n平均随机分组：记录上一次分组的信息，每一队随机找出 （总人数 / 4）个人和另一外队互换, 这样相对于每个人来说每次分组换的人都是最优的";
+	CString str = "随机分组：总人数随机分成两队\r\n平均分组：记录上一次分组的信息，每一队随机找出 （总人数 / 4）个人和另一外队互换, 这样相对于每个人来说每次分组换的人数都是最平衡的";
 	MessageBox(str, _T("分组说明"), MB_OK);
 }
 

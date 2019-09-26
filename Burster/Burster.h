@@ -20,6 +20,8 @@ class CBursterApp : public CWinApp
 public:
 	CBursterApp();
 
+	int ExitInstance();
+
 // ÖØÐ´
 public:
 	virtual BOOL InitInstance();

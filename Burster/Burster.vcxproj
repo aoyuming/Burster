@@ -116,7 +116,6 @@
     <ClInclude Include="projectCommand.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Setting.h" />
-    <ClInclude Include="SkinH.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="VersionInfo.h" />

@@ -26,7 +26,7 @@
 const CString REMOTE_VERSION_URL = _T("http://129.226.48.122/burster/version.txt");
 const CString LOCAL_LIVE_UPDATE = _T("liveUpdate.exe");
 const CString TEMP_PATH = _T("c:\\temp");
-const CString REMOTE_LIVE_UPDATE = _T("https://burster-update.oss-cn-beijing.aliyuncs.com/liveUpdate/liveUpdate_1_6_3.exe");
+const CString REMOTE_LIVE_UPDATE = _T("https://burster-update.oss-cn-beijing.aliyuncs.com/liveUpdate/liveUpdate_1_9_0.exe");
 
 //获取app安装路径
 CString GetAppPath()
@@ -73,9 +73,12 @@ BEGIN_MESSAGE_MAP(CBursterDlg, CDialogEx)
 	ON_WM_TIMER()
 	ON_BN_CLICKED(IDC_BUTTON11, &CBursterDlg::OnBnClickedButton11)
 	ON_WM_COPYDATA()
-	ON_COMMAND(MENU_UPDATE, &CBursterDlg::On32771)
-	ON_COMMAND(MENU_SETTING, &CBursterDlg::On32775)
-	ON_COMMAND(MENU_HELP, &CBursterDlg::On32776)
+	//ON_COMMAND(MENU_UPDATE, &CBursterDlg::On32771)
+	//ON_COMMAND(MENU_SETTING, &CBursterDlg::On32775)
+	//ON_COMMAND(MENU_HELP, &CBursterDlg::On32776)
+	ON_COMMAND(ID_32780, &CBursterDlg::OnSetting)
+	ON_COMMAND(ID_32781, &CBursterDlg::OnUpdate)
+	ON_COMMAND(ID_32782, &CBursterDlg::OnShuoMing)
 END_MESSAGE_MAP()
 
 
@@ -100,7 +103,7 @@ BOOL CBursterDlg::OnInitDialog()
 	CMenu* pSysMenu = GetSystemMenu(FALSE);
 	if (pSysMenu != NULL)
 	{
-		BOOL bNameValid;
+		/*BOOL bNameValid;
 		CString strAboutMenu;
 		bNameValid = strAboutMenu.LoadString(IDS_ABOUTBOX);
 		ASSERT(bNameValid);
@@ -108,14 +111,16 @@ BOOL CBursterDlg::OnInitDialog()
 		{
 			pSysMenu->AppendMenu(MF_SEPARATOR);
 			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
-		}
+		}*/
+		pSysMenu->AppendMenuA(IDR_MENU1);
 	}
 
 	CMenu MyMenu;
-	MyMenu.CreateMenu();
-	MyMenu.AppendMenu(MF_STRING, MENU_SETTING, "设置");
-	MyMenu.AppendMenu(MF_STRING, MENU_UPDATE, "检查更新");
-	MyMenu.AppendMenu(MF_STRING, MENU_HELP, "算法说明");
+	MyMenu.LoadMenuA(IDR_MENU1);
+	//MyMenu.CreateMenu();
+	//MyMenu.AppendMenu(MF_STRING, MENU_SETTING, "设置");
+	//MyMenu.AppendMenu(MF_STRING, MENU_UPDATE, "检查更新");
+	//MyMenu.AppendMenu(MF_STRING, MENU_HELP, "算法说明");
 	this->SetMenu(&MyMenu);
 	MyMenu.Detach();
 
@@ -202,7 +207,7 @@ BOOL CBursterDlg::OnInitDialog()
 //界面美化
 void CBursterDlg::UiBeautify()
 {
-	SkinH_Attach();
+	//SkinH_Attach();
 
 	//CMenu menu;
 	//menu.LoadMenu(IDR_MENU1);
@@ -944,6 +949,8 @@ void CBursterDlg::OnBnClickedButton4_Separate()
 			allStr += "\r\n";
 		}
 
+		delete[]pVect;
+
 		//保存文件
 		CString outputPath = "C://Users//Administrator//Desktop//分组人员信息.txt";
 		FILE* pf = NULL;
@@ -1237,8 +1244,23 @@ BOOL CBursterDlg::ForceTerminate()
 	return bRes;
 }
 
+void CBursterDlg::PostNcDestroy()
+{
+	// TODO: 在此添加专用代码和/或调用基类
+
+	CDialogEx::PostNcDestroy();
+}
+
+//设置
+void CBursterDlg::OnSetting()
+{
+	// TODO: 在此添加命令处理程序代码
+	CSetting set(m_LiveUpdateMode);
+	set.DoModal();
+}
+
 //检查更新
-void CBursterDlg::On32771()
+void CBursterDlg::OnUpdate()
 {
 	if (!FindWindow(NULL, "发现更新"))
 	{
@@ -1249,28 +1271,9 @@ void CBursterDlg::On32771()
 	}
 }
 
-//设置
-void CBursterDlg::On32775()
-{
-	// TODO: 在此添加命令处理程序代码
-	CSetting set(m_LiveUpdateMode);
-	set.DoModal();
-}
-
-
 //分组算法说明
-void CBursterDlg::On32776()
+void CBursterDlg::OnShuoMing()
 {
 	CString str = "随机分组：总人数随机分成两队\r\n平均分组：记录上一次分组的信息，每一队随机找出 （总人数 / 4）个人和另一外队互换, 这样相对于每个人来说每次分组换的人数都是最平衡的";
 	MessageBox(str, _T("分组说明"), MB_OK);
 }
-
-
-void CBursterDlg::PostNcDestroy()
-{
-	// TODO: 在此添加专用代码和/或调用基类
-
-	CDialogEx::PostNcDestroy();
-}
-
-

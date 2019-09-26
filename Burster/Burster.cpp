@@ -37,8 +37,16 @@ CBursterApp theApp;
 
 // CBursterApp ≥ı ºªØ
 
+int CBursterApp::ExitInstance()
+{
+	skinppExitSkin();
+	return CWinApp::ExitInstance();
+}
+
 BOOL CBursterApp::InitInstance()
 {
+	skinppLoadSkin(_T("Devoir.ssk"));
+
 	WNDCLASS wc;
 	::GetClassInfo(::AfxGetInstanceHandle(), _T("#32770"), &wc);
 

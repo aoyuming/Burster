@@ -141,10 +141,13 @@ public:
 	afx_msg void OnBnClickedButton11();
 	afx_msg virtual BOOL PreTranslateMessage(MSG* pMsg);
 	afx_msg BOOL OnCopyData(CWnd* pWnd, COPYDATASTRUCT* pCopyDataStruct);
-	afx_msg void On32771();
-	afx_msg void On32775();
-	afx_msg void On32776();
+	//afx_msg void On32771();
+	//afx_msg void On32775();
+	//afx_msg void On32776();
 	virtual void PostNcDestroy();
 	CStatic m_DaiFenzu;
 	CStatic m_All;
+	afx_msg void OnSetting();
+	afx_msg void OnUpdate();
+	afx_msg void OnShuoMing();
 };

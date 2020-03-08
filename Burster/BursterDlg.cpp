@@ -649,24 +649,28 @@ bool CBursterDlg::LoadConfiguration()
 void CBursterDlg::OnBnClickedButton8_Add()
 {
 	//创建添加窗口
-	CString name;
-	addName addDlg(name, this);
+	vector<CString> names;
+	addName addDlg(names, this);
 	addDlg.DoModal();
 
-	if (name == _T(""))
+	if (names.size() == 0)
 		return;
 
-	//创建添加成员命令
-	AddCommand* com = new AddCommand(name, this);
+	bool hint = (names.size() == 1);
+	for (int i = 0; i < (int)names.size(); ++i)
+	{
+		//创建添加成员命令
+		AddCommand* com = new AddCommand(names[i], this, hint);
 
-	//执行命令 返回成功就放入命令管理器里面 否则删除自己
-	if (com->execute())
-		CommandManager::getInstance()->StoreCommand(com);
-	else
-		delete com;
+		//执行命令 返回成功就放入命令管理器里面 否则删除自己
+		if (com->execute())
+			CommandManager::getInstance()->StoreCommand(com);
+		else
+			delete com;
+	}
 
 	//递归添加
-	OnBnClickedButton8_Add();
+	//OnBnClickedButton8_Add();
 }
 
 //删除

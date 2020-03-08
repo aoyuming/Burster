@@ -11,7 +11,7 @@
 
 IMPLEMENT_DYNAMIC(addName, CDialogEx)
 
-addName::addName(CString& name, CWnd* pParent /*=NULL*/)
+addName::addName(vector<CString>& name, CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_ADD_NAME, pParent),
 	m_Name(name)
 {
@@ -42,7 +42,29 @@ void addName::OnBnClickedButton1()
 	((CEdit*)GetDlgItem(IDC_EDIT1))->GetWindowText(str);
 	if (str != _T(""))
 	{
-		m_Name = str;
+		std::vector<CString> names;
+		str.TrimLeft();
+		str.TrimRight();
+
+		while (str.GetLength() != -1)
+		{
+			str.TrimLeft();
+			str.TrimRight();
+			int i = str.Find(' ');
+			if (i != -1)
+			{
+				CString temp = str.Left(i);
+				str = str.Right(str.GetLength() - i);
+				names.push_back(temp);
+			}
+			else
+			{
+				names.push_back(str);
+				break;
+			}
+		}
+
+		m_Name = names;
 		SendMessage(WM_CLOSE);
 	}
 }

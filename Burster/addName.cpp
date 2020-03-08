@@ -59,8 +59,18 @@ void addName::OnBnClickedButton1()
 			}
 			else
 			{
-				names.push_back(str);
-				break;
+				i = str.Find('\r\n');
+				if (i != -1)
+				{
+					CString temp = str.Left(i);
+					str = str.Right(str.GetLength() - i);
+					names.push_back(temp);
+				}
+				else
+				{
+					names.push_back(str);
+					break;
+				}
 			}
 		}
 

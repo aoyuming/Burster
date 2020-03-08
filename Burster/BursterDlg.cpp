@@ -135,8 +135,8 @@ BOOL CBursterDlg::OnInitDialog()
 	m_LastTime = time(0);
 	m_isManualUpdate = false;
 
-	m_Version[0] = 1;
-	m_Version[1] = 8;
+	m_Version[0] = 2;
+	m_Version[1] = 0;
 	m_Version[2] = 0;
 
 	//加载本地配置文件
@@ -151,7 +151,7 @@ BOOL CBursterDlg::OnInitDialog()
 	}
 
 	CString ver;
-	ver.Format("分组器 - v%d.%d.%d", m_Version[0], m_Version[1], m_Version[2]);
+	ver.Format("亡的分组器 - v%d.%d.%d", m_Version[0], m_Version[1], m_Version[2]);
 	m_Sum = 100;
 	m_SumEdit = (CEdit*)GetDlgItem(IDC_EDIT2);
 	m_SumEdit->SetWindowText(CString(_TEXT("100")));

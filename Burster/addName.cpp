@@ -43,6 +43,7 @@ void addName::OnBnClickedButton1()
 	if (str != _T(""))
 	{
 		std::vector<CString> names;
+		str.Replace('\r\n', ' ');
 		str.TrimLeft();
 		str.TrimRight();
 
@@ -59,18 +60,8 @@ void addName::OnBnClickedButton1()
 			}
 			else
 			{
-				i = str.Find('\r\n');
-				if (i != -1)
-				{
-					CString temp = str.Left(i);
-					str = str.Right(str.GetLength() - i);
-					names.push_back(temp);
-				}
-				else
-				{
-					names.push_back(str);
-					break;
-				}
+				names.push_back(str);
+				break;
 			}
 		}
 

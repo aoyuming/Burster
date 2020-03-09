@@ -21,6 +21,7 @@
 #define MENU_SETTING 0xffeeaa
 #define MENU_UPDATE	0xffeeab
 #define MENU_HELP	0xffeeae
+#define MAX_BUFF	1024 * 10
 
 
 const CString REMOTE_VERSION_URL = _T("http://129.226.48.122/burster/version.txt");
@@ -524,11 +525,11 @@ bool CBursterDlg::LoadConfiguration()
 	int allNum = 0;
 	fscanf_s(pf, "全部人数=%d", &allNum);
 
-	char buf[64];
+	char buf[MAX_BUFF];
 	for (int i = 0; i < allNum; ++i)
 	{
 		stMember* p = new stMember;
-		fscanf_s(pf, "\r\n姓名=%s", buf, 32);
+		fscanf_s(pf, "\r\n姓名=%s", buf, MAX_BUFF);
 		fscanf_s(pf, "\r\n金钱=%d", &p->money);
 		p->name = buf;
 		m_AllMemberVect.push_back(p);
@@ -541,7 +542,7 @@ bool CBursterDlg::LoadConfiguration()
 
 	for (int i = 0; i < allNum; ++i)
 	{
-		fscanf_s(pf, "\r\n姓名=%s", buf, 32);
+		fscanf_s(pf, "\r\n姓名=%s", buf, MAX_BUFF);
 
 		for (int j = 0; j < (int)m_CurMemberVect.size(); ++j)
 		{
@@ -560,7 +561,7 @@ bool CBursterDlg::LoadConfiguration()
 
 	for (int i = 0; i < allNum; ++i)
 	{
-		fscanf_s(pf, "\r\n姓名=%s", buf, 32);
+		fscanf_s(pf, "\r\n姓名=%s", buf, MAX_BUFF);
 
 		for (int j = 0; j < (int)m_CurMemberVect.size(); ++j)
 		{
@@ -579,7 +580,7 @@ bool CBursterDlg::LoadConfiguration()
 
 	for (int i = 0; i < allNum; ++i)
 	{
-		fscanf_s(pf, "\r\n姓名=%s", buf, 32);
+		fscanf_s(pf, "\r\n姓名=%s", buf, MAX_BUFF);
 
 		for (int j = 0; j < (int)m_CurMemberVect.size(); ++j)
 		{
@@ -598,7 +599,7 @@ bool CBursterDlg::LoadConfiguration()
 	for (int i = 0; i < allNum; ++i)
 	{
 		stData d;
-		fscanf_s(pf, "\r\n分组时间:%s", buf, 64);
+		fscanf_s(pf, "\r\n分组时间:%s", buf, MAX_BUFF);
 		d.fenZutime = buf;
 
 		int redNum = 0, blueNum = 0;
@@ -607,7 +608,7 @@ bool CBursterDlg::LoadConfiguration()
 		for (int j = 0; j < redNum; ++j)
 		{
 			stMember m;
-			fscanf_s(pf, "\r\n  %s  %d", buf, 64, &m.money);
+			fscanf_s(pf, "\r\n  %s  %d", buf, MAX_BUFF, &m.money);
 			m.money /= m_Sum;
 			m.name = buf;
 			d.red.push_back(m);
@@ -618,12 +619,12 @@ bool CBursterDlg::LoadConfiguration()
 		for (int j = 0; j < blueNum; ++j)
 		{
 			stMember m;
-			fscanf_s(pf, "\r\n  %s  %d", buf, 64, &m.money);
+			fscanf_s(pf, "\r\n  %s  %d", buf, MAX_BUFF, &m.money);
 			m.money /= m_Sum;
 			m.name = buf;
 			d.blue.push_back(m);
 		}
-		fscanf_s(pf, "\r\n胜利队伍:%s", buf, 64);
+		fscanf_s(pf, "\r\n胜利队伍:%s", buf, MAX_BUFF);
 		if (strcmp(buf, "未结束") == 0)
 			d.redLose = 2;
 		else if (strcmp(buf, "红队") == 0)
@@ -631,7 +632,7 @@ bool CBursterDlg::LoadConfiguration()
 		else
 			d.redLose = 1;
 
-		fscanf_s(pf, "\r\n胜利时间:%s", buf, 64);
+		fscanf_s(pf, "\r\n胜利时间:%s", buf, MAX_BUFF);
 		if (strcmp(buf, "未结束") == 0)
 			d.redLose = 2;
 		else
@@ -656,18 +657,12 @@ void CBursterDlg::OnBnClickedButton8_Add()
 	if (names.size() == 0)
 		return;
 
-	bool hint = (names.size() == 1);
-	for (int i = 0; i < (int)names.size(); ++i)
-	{
-		//创建添加成员命令
-		AddCommand* com = new AddCommand(names[i], this, hint);
-
-		//执行命令 返回成功就放入命令管理器里面 否则删除自己
-		if (com->execute())
-			CommandManager::getInstance()->StoreCommand(com);
-		else
-			delete com;
-	}
+	//创建添加成员命令
+	AddCommand* com = new AddCommand(names, this, names.size() == 1);
+	if (com->execute())
+		CommandManager::getInstance()->StoreCommand(com);
+	else
+		delete com;
 
 	//递归添加
 	//OnBnClickedButton8_Add();

@@ -23,6 +23,7 @@ private:
 	vector<Command*> m_ComVector;
 public:
 	ComplexCommand(int count, ...);
+	ComplexCommand(const vector<Command*>& vect);
 	virtual ~ComplexCommand();
 	virtual bool execute();
 	virtual void redo();

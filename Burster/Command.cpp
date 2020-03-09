@@ -95,6 +95,11 @@ int CommandManager::GetRedoSize()
 }
 
 
+ComplexCommand::ComplexCommand(const vector<Command*>& vect)
+{
+	m_ComVector = vect;
+}
+
 ComplexCommand::ComplexCommand(int count, ...) 
 {
 	va_list args;
@@ -124,13 +129,13 @@ bool ComplexCommand::execute()
 void ComplexCommand::redo() 
 {
 	for (int i = 0; i < (int)m_ComVector.size(); ++i)
-		m_ComVector[i]->undo();
+		m_ComVector[i]->redo();
 }
 
 void ComplexCommand::undo() 
 {
 	for (int i = (int)m_ComVector.size() - 1; i >= 0; --i)
-		m_ComVector[i]->redo();
+		m_ComVector[i]->undo();
 }
 
 //ÃÌº”√¸¡Ó

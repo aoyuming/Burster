@@ -658,7 +658,7 @@ void CBursterDlg::OnBnClickedButton8_Add()
 		return;
 
 	//创建添加成员命令
-	AddCommand* com = new AddCommand(names, this, names.size() == 1);
+	AddCommand* com = new AddCommand(names, this);
 	if (com->execute())
 		CommandManager::getInstance()->StoreCommand(com);
 	else
@@ -951,6 +951,10 @@ void CBursterDlg::OnBnClickedButton4_Separate()
 		delete[]pVect;
 
 		//保存文件
+		CString tempAllStr = allStr;
+		allStr.Replace("\r\n第", "aoyuming1996第");
+		allStr.Replace("\r\n", " ");
+		allStr.Replace("aoyuming1996第", "\r\n第");
 		CString outputPath = "C://Users//Administrator//Desktop//分组人员信息.txt";
 		FILE* pf = NULL;
 		fopen_s(&pf, outputPath, "wb");
@@ -961,7 +965,7 @@ void CBursterDlg::OnBnClickedButton4_Separate()
 		fclose(pf);
 
 		//显示出来
-		CGroupingResult gr(this, allStr);
+		CGroupingResult gr(this, tempAllStr);
 		gr.DoModal();
 	}
 }

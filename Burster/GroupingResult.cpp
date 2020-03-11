@@ -5,7 +5,7 @@
 #include "Burster.h"
 #include "GroupingResult.h"
 #include "afxdialogex.h"
-
+#include <iostream>
 
 // CGroupingResult 对话框
 
@@ -30,6 +30,7 @@ void CGroupingResult::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CGroupingResult, CDialogEx)
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 
@@ -52,9 +53,55 @@ BOOL CGroupingResult::PreTranslateMessage(MSG* pMsg)
 		if (pMsg->wParam == 'A')
 			m_Edit.SetSel(0, -1);
 
+		if (pMsg->wParam == 'C')
+			SetTimer(1, 30, NULL);
+
 	} while (FALSE);
 
 	return CDialog::PreTranslateMessage(pMsg);
+}
+
+// 获取剪切板上的字符串
+CString CGroupingResult::fnGetStrFromClipboard(void)
+{
+	CString strTmp;
+	strTmp.Empty();
+	if (::OpenClipboard(NULL))
+	{
+		UINT nFormat = (sizeof(TCHAR) == sizeof(WCHAR) ? CF_UNICODETEXT : CF_TEXT);
+		HGLOBAL hClip = GetClipboardData(nFormat);        // typedef HANDLE HGLOBAL
+		if (hClip)
+		{
+			char *pBuff = (char*)GlobalLock(hClip);
+			GlobalUnlock(hClip);
+			strTmp.Format(_T("%s"), pBuff);
+		}
+		CloseClipboard();
+	}
+	return strTmp;
+}
+
+// 设置剪切板内容
+void CGroupingResult::fnCopyStrToClipboard(CString szStr)
+{
+	if (::OpenClipboard(NULL))
+	{
+		if (EmptyClipboard())
+		{
+			size_t cbStr = (szStr.GetLength() + 1)*sizeof(TCHAR);
+			HGLOBAL hData = GlobalAlloc(GMEM_MOVEABLE, cbStr);
+			memcpy_s(GlobalLock(hData), cbStr, szStr.LockBuffer(), cbStr);
+			szStr.UnlockBuffer();
+			GlobalUnlock(hData);
+			UINT nFormat = (sizeof(TCHAR) == sizeof(WCHAR) ? CF_UNICODETEXT : CF_TEXT);
+			if (NULL == ::SetClipboardData(nFormat, hData))
+			{
+				CloseClipboard();
+				return;
+			}
+		}
+		CloseClipboard();        //关闭剪切板
+	}
 }
 
 BOOL CGroupingResult::OnInitDialog()
@@ -66,8 +113,22 @@ BOOL CGroupingResult::OnInitDialog()
 	//m_Edit.SetSel(-1, -1);
 	//m_Edit.SetFocus();
 
-	// TODO:  在此添加额外的初始化
-
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 异常: OCX 属性页应返回 FALSE
+}
+
+void CGroupingResult::OnTimer(UINT_PTR nIDEvent)
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	if (nIDEvent == 1)
+	{
+		KillTimer(1);
+		CString str = fnGetStrFromClipboard();
+		str.Replace("\r\n第", "aoyuming1996第");
+		str.Replace("\r\n", " ");
+		str.Replace("aoyuming1996第", "\r\n第");
+		fnCopyStrToClipboard(str);
+	}
+	
+	CDialogEx::OnTimer(nIDEvent);
 }

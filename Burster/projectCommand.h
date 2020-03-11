@@ -18,7 +18,6 @@ private:
 	vector<CString> m_AddName;
 
 	bool m_Undo;//是否撤回
-	bool m_NoHint;
 	vector<stMember*> m_NewMember;//添加的成员 如果撤回的话 要自己delete掉
 
 	vector<stMember*> m_AllMemberVect_Undo_Temp;
@@ -30,25 +29,23 @@ private:
 	vector<stMember*> m_DoveMemberVect_Redo_Temp;
 public:
 
-	AddCommand(const vector<CString>& name, CBursterDlg* pDlg, bool hint = true)
+	AddCommand(const vector<CString>& name, CBursterDlg* pDlg)
 		:
 		m_AddName(name),
 		m_NewMember(NULL),
 		m_Undo(false),
-		m_MainDlg(pDlg),
-		m_NoHint(hint)
+		m_MainDlg(pDlg)
 	{
 		m_AllMemberVect_Undo_Temp = _MD->m_AllMemberVect;
 		m_CurMemberVect_Undo_Temp = _MD->m_CurMemberVect;
 		m_DoveMemberVect_Undo_Temp = _MD->m_DoveMemberVect;
 	}
 
-	AddCommand(CString name, CBursterDlg* pDlg, bool hint = true)
+	AddCommand(CString name, CBursterDlg* pDlg)
 		:
 		m_NewMember(NULL),
 		m_Undo(false),
-		m_MainDlg(pDlg),
-		m_NoHint(hint)
+		m_MainDlg(pDlg)
 	{
 		m_AddName.push_back(name);
 		m_AllMemberVect_Undo_Temp = _MD->m_AllMemberVect;
@@ -110,16 +107,12 @@ public:
 						}
 					}
 				}
-				else
-				{
-					delete m;
-					continue;
-				}
+
 				delete m;
 			}
 		}
 
-		if (mVect.size() == 0 && !m_NoHint)
+		if (mVect.size() == 0)
 			MessageBox(AfxGetApp()->m_pMainWnd->m_hWnd, _T("   重复添加   "), _T("提示"), MB_OK | MB_ICONSTOP);
 		
 		m_AllMemberVect_Redo_Temp = _MD->m_AllMemberVect;

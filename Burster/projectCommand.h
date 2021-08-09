@@ -86,8 +86,8 @@ public:
 			//没有重复才添加
 			if (NULL == p)
 			{
-				_MD->m_CurListBox->AddString(m->name);
-				_MD->m_AllListBox->AddString(m->name + _TEXT("  +0"));
+				_MD->m_CurListBox->InsertString(0, m->name);
+				_MD->m_AllListBox->InsertString(0, m->name + _TEXT("  +0"));
 				_MD->m_CurMemberVect.push_back(m);
 				_MD->m_AllMemberVect.push_back(m);
 				mVect.push_back(m);
@@ -97,7 +97,7 @@ public:
 				if (NULL == IsMemberInVect(*p, _MD->m_CurMemberVect))
 				{
 					_MD->m_CurMemberVect.push_back(p);
-					_MD->m_CurListBox->AddString(p->name);
+					_MD->m_CurListBox->InsertString(0, p->name);
 					for (int i = 0; i < (int)_MD->m_DoveMemberVect.size(); ++i)
 					{
 						if (m->name == _MD->m_DoveMemberVect[i]->name)
@@ -134,14 +134,14 @@ public:
 		_MD->m_CurListBox->ResetContent();
 		_MD->m_AllListBox->ResetContent();
 		for (int i = 0; i < (int)_MD->m_CurMemberVect.size(); ++i)
-			_MD->m_CurListBox->AddString((_MD->m_CurMemberVect)[i]->name);
+			_MD->m_CurListBox->InsertString(0, (_MD->m_CurMemberVect)[i]->name);
 		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
 			CString money, flag("");
 			money.Format("%d", _MD->m_AllMemberVect[i]->money * _MD->m_Sum);
 			if (_MD->m_AllMemberVect[i]->money >= 0)
 				flag = "+";
-			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _T("  ") + flag + money);
+			_MD->m_AllListBox->InsertString(0, _MD->m_AllMemberVect[i]->name + _T("  ") + flag + money);
 		}
 	}
 
@@ -156,14 +156,14 @@ public:
 		_MD->m_CurListBox->ResetContent();
 		_MD->m_AllListBox->ResetContent();
 		for (int i = 0; i < (int)_MD->m_CurMemberVect.size(); ++i)
-			_MD->m_CurListBox->AddString((_MD->m_CurMemberVect)[i]->name);
+			_MD->m_CurListBox->InsertString(0, (_MD->m_CurMemberVect)[i]->name);
 		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
 			CString money, flag("");
 			money.Format("%d", _MD->m_AllMemberVect[i]->money * _MD->m_Sum);
 			if (_MD->m_AllMemberVect[i]->money >= 0)
 				flag = "+";
-			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _T("  ") + flag + money);
+			_MD->m_AllListBox->InsertString(0, _MD->m_AllMemberVect[i]->name + _T("  ") + flag + money);
 		}
 	}
 };
@@ -240,7 +240,7 @@ public:
 
 		_MD->m_CurListBox->ResetContent();
 		for (int i = 0; i < (int)_MD->m_CurMemberVect.size(); ++i)
-			_MD->m_CurListBox->AddString(_MD->m_CurMemberVect[i]->name);
+			_MD->m_CurListBox->InsertString(0, _MD->m_CurMemberVect[i]->name);
 	}
 
 	//撤销
@@ -253,7 +253,7 @@ public:
 
 		_MD->m_CurListBox->ResetContent();
 		for (int i = 0; i < (int)_MD->m_CurMemberVect.size(); ++i)
-			_MD->m_CurListBox->AddString(_MD->m_CurMemberVect[i]->name);
+			_MD->m_CurListBox->InsertString(0, _MD->m_CurMemberVect[i]->name);
 	}
 };
 
@@ -325,14 +325,14 @@ public:
 			{
 				_MD->m_LastRedMemberVect.push_back(temp[rd]);
 				_MD->m_RedMemberVect.push_back(temp[rd]);
-				_MD->m_RedListBox->AddString(temp[rd]->name);
+				_MD->m_RedListBox->InsertString(0, temp[rd]->name);
 				flag = false;
 			}
 			else
 			{
 				_MD->m_LastBlueMemberVect.push_back(temp[rd]);
 				_MD->m_BlueMemberVect.push_back(temp[rd]);
-				_MD->m_BlueListBox->AddString(temp[rd]->name);
+				_MD->m_BlueListBox->InsertString(0, temp[rd]->name);
 				flag = true;
 			}
 			temp.erase(temp.begin() + rd);
@@ -411,9 +411,9 @@ public:
 		_MD->m_RedMemberVect = _MD->m_LastRedMemberVect;
 		_MD->m_BlueMemberVect = _MD->m_LastBlueMemberVect;
 		for (int i = 0; i < (int)_MD->m_RedMemberVect.size(); ++i)
-			_MD->m_RedListBox->AddString(_MD->m_RedMemberVect[i]->name);
+			_MD->m_RedListBox->InsertString(0, _MD->m_RedMemberVect[i]->name);
 		for (int i = 0; i < (int)_MD->m_BlueMemberVect.size(); ++i)
-			_MD->m_BlueListBox->AddString(_MD->m_BlueMemberVect[i]->name);
+			_MD->m_BlueListBox->InsertString(0, _MD->m_BlueMemberVect[i]->name);
 	}
 
 	//执行命令
@@ -480,10 +480,10 @@ public:
 		_MD->m_RedListBox->ResetContent();
 
 		for (auto it = _MD->m_RedMemberVect.begin(); it != _MD->m_RedMemberVect.end(); ++it)
-			_MD->m_RedListBox->AddString((*it)->name);
+			_MD->m_RedListBox->InsertString(0, (*it)->name);
 
 		for (auto it = _MD->m_BlueMemberVect.begin(); it != _MD->m_BlueMemberVect.end(); ++it)
-			_MD->m_BlueListBox->AddString((*it)->name);
+			_MD->m_BlueListBox->InsertString(0, (*it)->name);
 	}
 
 	//撤销
@@ -500,10 +500,10 @@ public:
 		_MD->m_RedListBox->ResetContent();
 
 		for (auto it = _MD->m_RedMemberVect.begin(); it != _MD->m_RedMemberVect.end(); ++it)
-			_MD->m_RedListBox->AddString((*it)->name);
+			_MD->m_RedListBox->InsertString(0, (*it)->name);
 
 		for (auto it = _MD->m_BlueMemberVect.begin(); it != _MD->m_BlueMemberVect.end(); ++it)
-			_MD->m_BlueListBox->AddString((*it)->name);
+			_MD->m_BlueListBox->InsertString(0, (*it)->name);
 	}
 };
 
@@ -578,7 +578,7 @@ public:
 			CString s = _TEXT("");
 			s = _MD->m_AllMemberVect[i]->money >= 0 ? _TEXT("+") : s;
 			_itoa_s(_MD->m_AllMemberVect[i]->money * _MD->m_Sum, buf, 10);
-			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
+			_MD->m_AllListBox->InsertString(0, _MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 
 		//最佳支付方案
@@ -653,10 +653,10 @@ public:
 		PayScheme(&_MD->m_PaySchemeString, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 
 		for (auto it = _MD->m_RedMemberVect.begin(); it != _MD->m_RedMemberVect.end(); ++it)
-			_MD->m_RedListBox->AddString((*it)->name);
+			_MD->m_RedListBox->InsertString(0, (*it)->name);
 
 		for (auto it = _MD->m_BlueMemberVect.begin(); it != _MD->m_BlueMemberVect.end(); ++it)
-			_MD->m_BlueListBox->AddString((*it)->name);
+			_MD->m_BlueListBox->InsertString(0, (*it)->name);
 
 		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
@@ -664,7 +664,7 @@ public:
 			CString s = _TEXT("");
 			s = _MD->m_AllMemberVect[i]->money >= 0 ? _TEXT("+") : s;
 			_itoa_s(_MD->m_AllMemberVect[i]->money * _MD->m_Sum, buf, 10);
-			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
+			_MD->m_AllListBox->InsertString(0, _MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 	}
 
@@ -693,10 +693,10 @@ public:
 		PayScheme(&_MD->m_PaySchemeString, _MD->m_AllMemberVect, _MD->m_Sum, _MD->m_PaySchemeListBox);
 
 		for (auto it = _MD->m_RedMemberVect.begin(); it != _MD->m_RedMemberVect.end(); ++it)
-			_MD->m_RedListBox->AddString((*it)->name);
+			_MD->m_RedListBox->InsertString(0, (*it)->name);
 
 		for (auto it = _MD->m_BlueMemberVect.begin(); it != _MD->m_BlueMemberVect.end(); ++it)
-			_MD->m_BlueListBox->AddString((*it)->name);
+			_MD->m_BlueListBox->InsertString(0, (*it)->name);
 
 		for (int i = 0; i < (int)_MD->m_AllMemberVect.size(); ++i)
 		{
@@ -704,7 +704,7 @@ public:
 			CString s = _TEXT("");
 			s = _MD->m_AllMemberVect[i]->money >= 0 ? _TEXT("+") : s;
 			_itoa_s(_MD->m_AllMemberVect[i]->money * _MD->m_Sum, buf, 10);
-			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
+			_MD->m_AllListBox->InsertString(0, _MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 	}
 };
@@ -759,7 +759,7 @@ public:
 			CString s = _TEXT("");
 			s = _MD->m_AllMemberVect[i]->money >= 0 ? _TEXT("+") : s;
 			_itoa_s(_MD->m_AllMemberVect[i]->money * (_MD->m_Sum), buf, 10);
-			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
+			_MD->m_AllListBox->InsertString(0, _MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 
 		//最佳支付方案
@@ -802,7 +802,7 @@ public:
 			CString s = _TEXT("");
 			s = _MD->m_AllMemberVect[i]->money >= 0 ? _TEXT("+") : s;
 			_itoa_s(_MD->m_AllMemberVect[i]->money * (_MD->m_Sum), buf, 10);
-			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
+			_MD->m_AllListBox->InsertString(0, _MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 	}
 
@@ -833,7 +833,7 @@ public:
 			CString s = _TEXT("");
 			s = (_MD->m_AllMemberVect)[i]->money >= 0 ? _TEXT("+") : s;
 			_itoa_s((_MD->m_AllMemberVect)[i]->money * (_MD->m_Sum), buf, 10);
-			_MD->m_AllListBox->AddString(_MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
+			_MD->m_AllListBox->InsertString(0, _MD->m_AllMemberVect[i]->name + _TEXT("  ") + s + CString(buf));
 		}
 	}
 };
@@ -931,7 +931,7 @@ public:
 					money = _T("+") + money;
 				if (i == 3)
 					str = str + _T("  ") + money;
-				list[i]->AddString(str);
+				list[i]->InsertString(0, str);
 			}
 		}
 	}

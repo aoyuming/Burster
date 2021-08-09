@@ -955,14 +955,14 @@ void CBursterDlg::OnBnClickedButton4_Separate()
 		allStr.Replace("\r\n第", "aoyuming1996第");
 		allStr.Replace("\r\n", " ");
 		allStr.Replace("aoyuming1996第", "\r\n第");
-		CString outputPath = "C://Users//Administrator//Desktop//分组人员信息.txt";
+	/*	CString outputPath = "C://Users//Administrator//Desktop//分组人员信息.txt";
 		FILE* pf = NULL;
 		fopen_s(&pf, outputPath, "wb");
 		if (!pf)
 			return;
 
 		fwrite(allStr.GetBuffer(), allStr.GetLength(), 1, pf);
-		fclose(pf);
+		fclose(pf);*/
 
 		//显示出来
 		CGroupingResult gr(this, tempAllStr);

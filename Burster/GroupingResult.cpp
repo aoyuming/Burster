@@ -31,6 +31,7 @@ void CGroupingResult::DoDataExchange(CDataExchange* pDX)
 
 BEGIN_MESSAGE_MAP(CGroupingResult, CDialogEx)
 	ON_WM_TIMER()
+	ON_WM_CLOSE()
 END_MESSAGE_MAP()
 
 
@@ -131,4 +132,13 @@ void CGroupingResult::OnTimer(UINT_PTR nIDEvent)
 	}
 	
 	CDialogEx::OnTimer(nIDEvent);
+}
+
+void CGroupingResult::OnClose()
+{
+	// TODO: 在此添加消息处理程序代码和/或调用默认值
+	if (MessageBox(_TEXT("确定关闭吗？关闭以后分组信息将清空！"), _TEXT("提示"), MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
+		return;
+
+	CDialogEx::OnClose();
 }

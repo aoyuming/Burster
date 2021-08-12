@@ -167,5 +167,5 @@ void PayScheme(vector<CString>* paySchemeString, //支付信息要存放的数组
 	//把计算好的支付方案放入listbox显示
 	payListBox->ResetContent();
 	for (int i = (int)paySchemeString->size() - 1; i >= 0; --i)
-		payListBox->InsertString(0, (*paySchemeString)[i]);
+		payListBox->AddString((*paySchemeString)[i]);
 }

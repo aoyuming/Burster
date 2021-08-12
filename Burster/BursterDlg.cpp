@@ -674,14 +674,15 @@ void CBursterDlg::OnBnClickedButton2_Delete()
 	// TODO: 在此添加控件通知处理程序代码
 	CListBox* listbox = (CListBox*)GetDlgItem(IDC_LIST2);
 	int index = -1;
-	CSelectDlg dlg(m_CurMemberVect, index, NULL, _T("请选择要删除的成员"), _T("删除"));
+	CString name;
+	CSelectDlg dlg(m_CurMemberVect, index, &name, _T("请选择要删除的成员"), _T("删除"));
 	dlg.DoModal();
 
 	if (index == -1)
 		return;
 
 	//创建添加成员命令
-	EraseCommand* com = new EraseCommand(index, this);
+	EraseCommand* com = new EraseCommand(name, this);
 
 	//执行命令 返回成功就放入命令管理器里面 否则删除自己
 	if (com->execute())

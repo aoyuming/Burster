@@ -26,12 +26,13 @@
 
 const CString REMOTE_VERSION_URL = _T("http://129.226.48.122/burster/version.txt");
 const CString LOCAL_LIVE_UPDATE = _T("liveUpdate.exe");
-const CString TEMP_PATH = _T("c:\\temp");
+static CString TEMP_PATH = _T("c:\\temp");
 const CString REMOTE_LIVE_UPDATE = _T("https://burster-update.oss-cn-beijing.aliyuncs.com/liveUpdate/liveUpdate_1_9_0.exe");
 
 //获取app安装路径
 CString GetAppPath()
 {
+
 	//本程序安装路径
 	CString appPath;
 	GetModuleFileName(NULL, appPath.GetBufferSetLength(MAX_PATH + 1), MAX_PATH);
@@ -132,6 +133,8 @@ BOOL CBursterDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
 	SetIcon(m_hIcon, FALSE);		// 设置小图标
 
+	GetTempPath(MAX_PATH, TEMP_PATH.GetBufferSetLength(MAX_PATH));
+	//MessageBox(TEMP_PATH);
 	m_LiveUpdateMode = INVARIABLY;
 	m_LastTime = time(0);
 	m_isManualUpdate = false;
@@ -997,8 +1000,8 @@ void CBursterDlg::OnClose()
 	CommandManager::getInstance()->release();
 
 	//删除临时文件
-	if (PathFileExists(TEMP_PATH))
-		CFile::Remove(TEMP_PATH);
+	//if (PathFileExists(TEMP_PATH))
+	//	CFile::Remove(TEMP_PATH);
 
 	//检测更新程序是否在运行
 	//CWnd* liveUpdate = FindWindow(_T("myLiveUpdate"), NULL);
@@ -1010,7 +1013,6 @@ void CBursterDlg::OnClose()
 
 	//退出线程
 	EndThread();
-
 	CDialogEx::OnClose();
 }
 

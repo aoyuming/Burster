@@ -150,4 +150,5 @@ public:
 	afx_msg void OnSetting();
 	afx_msg void OnUpdate();
 	afx_msg void OnShuoMing();
+	afx_msg void OnBnClickedButton13();
 };

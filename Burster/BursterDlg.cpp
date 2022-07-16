@@ -81,6 +81,7 @@ BEGIN_MESSAGE_MAP(CBursterDlg, CDialogEx)
 	ON_COMMAND(ID_32780, &CBursterDlg::OnSetting)
 	ON_COMMAND(ID_32781, &CBursterDlg::OnUpdate)
 	ON_COMMAND(ID_32782, &CBursterDlg::OnShuoMing)
+	ON_BN_CLICKED(IDC_BUTTON13, &CBursterDlg::OnBnClickedButton13)
 END_MESSAGE_MAP()
 
 
@@ -140,7 +141,7 @@ BOOL CBursterDlg::OnInitDialog()
 	m_isManualUpdate = false;
 
 	m_Version[0] = 2;
-	m_Version[1] = 0;
+	m_Version[1] = 4;
 	m_Version[2] = 0;
 
 	//加载本地配置文件
@@ -1282,4 +1283,41 @@ void CBursterDlg::OnShuoMing()
 {
 	CString str = "随机分组：总人数随机分成两队\r\n平均分组：记录上一次分组的信息，每一队随机找出 （总人数 / 4）个人和另一外队互换, 这样相对于每个人来说每次分组换的人数都是最平衡的";
 	MessageBox(str, _T("分组说明"), MB_OK);
+}
+
+//复制分组
+void CBursterDlg::OnBnClickedButton13()
+{
+	CString s1 = "第一组：";
+	CString s2 = "第二组：";
+	for (int i = 0; i < m_RedMemberVect.size(); ++i)
+		s1 += m_RedMemberVect[i]->name + " ";
+	for (int i = 0; i < m_BlueMemberVect.size(); ++i)
+		s2 += m_BlueMemberVect[i]->name + " ";
+	
+	CString s3 = s1 +  "\r\n" + s2;
+
+	if (::OpenClipboard(NULL))
+	{
+		if (EmptyClipboard())
+		{
+			size_t cbStr = (s3.GetLength() + 1) * sizeof(TCHAR);
+			HGLOBAL hData = GlobalAlloc(GMEM_MOVEABLE, cbStr);
+			memcpy_s(GlobalLock(hData), cbStr, s3.LockBuffer(), cbStr);
+			s3.UnlockBuffer();
+			GlobalUnlock(hData);
+			UINT nFormat = (sizeof(TCHAR) == sizeof(WCHAR) ? CF_UNICODETEXT : CF_TEXT);
+			if (NULL == ::SetClipboardData(nFormat, hData))
+			{
+				MessageBox("复制失败");
+				CloseClipboard();
+				return;
+			}
+			else
+			{
+				MessageBox("复制成功");
+			}
+		}
+		CloseClipboard();        //关闭剪切板
+	}
 }
